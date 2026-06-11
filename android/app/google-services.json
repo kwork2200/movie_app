@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "781731631889",
+    "project_id": "movi-app-cafe4",
+    "storage_bucket": "movi-app-cafe4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781731631889:android:412edb96c21d1ebe4372b0",
+        "android_client_info": {
+          "package_name": "com.example.new_movie_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN_wQl6OrdlFtUQzBGYDdzfW4oZIHzhN0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

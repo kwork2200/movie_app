@@ -1,0 +1,85 @@
+{
+  "conditions": [],
+  "parameters": {
+    "show_banner_ads": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Control banner ad visibility across entire app. Set to false to hide all banner ads.",
+      "valueType": "BOOLEAN"
+    },
+    "show_native_ads": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Control native ad visibility across entire app. Set to false to hide all native ads.",
+      "valueType": "BOOLEAN"
+    },
+    "show_interstitial_ads": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Control interstitial ad visibility across entire app. Set to false to hide all interstitial ads.",
+      "valueType": "BOOLEAN"
+    },
+    "interstitial_ad_frequency": {
+      "defaultValue": {
+        "value": "3"
+      },
+      "description": "Show interstitial ad after every X screens. Higher value = less frequent ads. Minimum value is 1.",
+      "valueType": "NUMBER"
+    },
+    "android_banner_ad_id": {
+      "defaultValue": {
+        "value": "ca-app-pub-3940256099942544/6300978111"
+      },
+      "description": "Android Banner Ad Unit ID. Replace with your real AdMob Ad Unit ID.",
+      "valueType": "STRING"
+    },
+    "android_interstitial_ad_id": {
+      "defaultValue": {
+        "value": "ca-app-pub-3940256099942544/1033173712"
+      },
+      "description": "Android Interstitial Ad Unit ID. Replace with your real AdMob Ad Unit ID.",
+      "valueType": "STRING"
+    },
+    "android_native_ad_id": {
+      "defaultValue": {
+        "value": "ca-app-pub-3940256099942544/2247696110"
+      },
+      "description": "Android Native Ad Unit ID. Replace with your real AdMob Ad Unit ID.",
+      "valueType": "STRING"
+    },
+    "ios_banner_ad_id": {
+      "defaultValue": {
+        "value": "ca-app-pub-3940256099942544/2934735716"
+      },
+      "description": "iOS Banner Ad Unit ID. Replace with your real AdMob Ad Unit ID.",
+      "valueType": "STRING"
+    },
+    "ios_interstitial_ad_id": {
+      "defaultValue": {
+        "value": "ca-app-pub-3940256099942544/4411468910"
+      },
+      "description": "iOS Interstitial Ad Unit ID. Replace with your real AdMob Ad Unit ID.",
+      "valueType": "STRING"
+    },
+    "ios_native_ad_id": {
+      "defaultValue": {
+        "value": "ca-app-pub-3940256099942544/3986624511"
+      },
+      "description": "iOS Native Ad Unit ID. Replace with your real AdMob Ad Unit ID.",
+      "valueType": "STRING"
+    }
+  },
+  "version": {
+    "versionNumber": "1",
+    "updateTime": "2026-06-08T00:00:00Z",
+    "updateUser": {
+      "email": "setup@movieapp.com"
+    },
+    "description": "Initial Remote Config setup for ad management",
+    "updateOrigin": "ADMIN_SDK_NODE",
+    "updateType": "INCREMENTAL_UPDATE"
+  }
+}
