@@ -86,10 +86,7 @@ class MoviesWidget extends StatelessWidget {
             },
           ),
           // Native Ad after slider (Movies Home position 1)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'movies_home_1'),
-          ),
+          NativeAdWidget(height: AppSize.s175, adKey: 'movies_home_1', size: NativeAdSize.small),
           SectionHeader(
             title: AppStrings.popularMovies,
             onSeeAllTap: () {
@@ -116,11 +113,7 @@ class MoviesWidget extends StatelessWidget {
               return SectionListViewCard(media: upcomingMovies[index]);
             },
           ),
-          // Native Ad after Top Rated (Movies Home position 2)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'movies_home_2'),
-          ),
+          NativeAdWidget(height: AppSize.s175, adKey: 'movies_home_2', size: NativeAdSize.small),
           // Trending Section
           SectionHeader(
             title: 'Trending Now',
@@ -135,7 +128,6 @@ class MoviesWidget extends StatelessWidget {
               return SectionListViewCard(media: trendingMovies[index]);
             },
           ),
-          // Upcoming Section
           SectionHeader(
             title: 'Upcoming Shows',
             onSeeAllTap: () {
@@ -149,11 +141,7 @@ class MoviesWidget extends StatelessWidget {
               return SectionListViewCard(media: upcomingMovies[index]);
             },
           ),
-          // Native Ad after Upcoming (Movies Home position 3)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(height: 280, adKey: 'movies_home_3'),
-          ),
+          NativeAdWidget(height: AppSize.s175, adKey: 'movies_home_3', size: NativeAdSize.small),
           // Action Section
           SectionHeader(
             title: 'Action & Adventure',

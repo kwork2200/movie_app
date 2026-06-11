@@ -18,6 +18,7 @@ class InterstitialAdManager {
   InterstitialAd? _interstitialAd;
   bool _isAdLoading = false;
   int _screenCounter = 0;
+  int _backCounter = 0;
   StreamSubscription? _configSubscription;
   
   void _handleConfigUpdate() {
@@ -29,6 +30,7 @@ class InterstitialAdManager {
       _interstitialAd?.dispose();
       _interstitialAd = null;
       _isAdLoading = false;
+      _backCounter = 0;
     }
     // If ads were enabled via Remote Config
     else {
@@ -106,6 +108,30 @@ class InterstitialAdManager {
       _screenCounter = 0;
     } else {
       print('⚠️ Interstitial ad not ready yet');
+      await loadAd();
+    }
+  }
+
+  /// Show interstitial ad on back navigation (system back / screen back arrow)
+  Future<void> showAdOnBack() async {
+    if (!AdService.instance.shouldShowInterstitialAds) {
+      print('⏭️ Interstitial ads disabled in Remote Config (back)');
+      return;
+    }
+
+    _backCounter++;
+
+    if (_backCounter % _adFrequency != 0) {
+      print('⏭️ Skipping back-nav ad (counter: $_backCounter, frequency: $_adFrequency)');
+      return;
+    }
+
+    if (_interstitialAd != null) {
+      print('📺 Showing interstitial ad on back navigation');
+      await _interstitialAd!.show();
+      _backCounter = 0;
+    } else {
+      print('⚠️ Interstitial ad not ready yet (back)');
       await loadAd();
     }
   }

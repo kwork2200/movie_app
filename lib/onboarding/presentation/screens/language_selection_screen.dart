@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/service_locator.dart';
 import '../../data/services/onboarding_storage_service.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
-import '../../../core/presentation/components/ads/custom_height_native_ad.dart';
+import '../../../core/presentation/components/ads/native_ad_widget.dart';
+import '../../../core/resources/app_values.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
@@ -192,13 +193,10 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                               ),
 
                               if ((index + 1) % 2 == 0)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8, bottom: 10),
-                                  child: CustomHeightNativeAd(
-                                    adKey: 'language_selection',
-                                    height: 80,
-                                    margin: EdgeInsets.zero,
-                                  ),
+                                NativeAdWidget(
+                                  height: AppSize.s175,
+                                  adKey: 'language_selection',
+                                  size: NativeAdSize.small,
                                 ),
                             ],
 

@@ -17,21 +17,25 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   bool _isAdLoaded = false;
   StreamSubscription? _configSubscription;
   bool _shouldShowAds = false;
+  AdSize? _adSize;
 
   @override
   void initState() {
     super.initState();
     _shouldShowAds = AdService.instance.shouldShowBannerAds;
-    
-    // Load ad if enabled
-    if (_shouldShowAds) {
-      _loadBannerAd();
-    }
-    
+
     // Listen to Remote Config changes
     _configSubscription = RemoteConfigService.instance.configUpdates.listen((_) {
       _handleConfigUpdate();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_shouldShowAds && _bannerAd == null && !_isAdLoaded) {
+      _loadBannerAd();
+    }
   }
   
   void _handleConfigUpdate() {
@@ -59,8 +63,18 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
   }
 
-  void _loadBannerAd() {
+  void _loadBannerAd() async {
+    final screenWidth = MediaQuery.of(context).size.width.truncate();
+    final adSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(screenWidth);
+
+    if (!mounted) return;
+
+    setState(() {
+      _adSize = adSize ?? AdSize.banner;
+    });
+
     _bannerAd = AdService.instance.createBannerAd(
+      size: _adSize,
       onAdLoaded: (ad) {
         if (mounted) {
           setState(() {
@@ -91,16 +105,14 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       return const SizedBox.shrink();
     }
 
-    if (!_isAdLoaded || _bannerAd == null) {
+    if (!_isAdLoaded || _bannerAd == null || _adSize == null) {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      color: Colors.transparent,
-      alignment: Alignment.center,
-      width: _bannerAd!.size.width.toDouble(),
-      height: _bannerAd!.size.height.toDouble(),
-      child: AdWidget(ad: _bannerAd!,),
+    return SizedBox(
+      width: double.infinity,
+      height: _adSize!.height.toDouble()-10,
+      child: AdWidget(ad: _bannerAd!),
     );
   }
 }

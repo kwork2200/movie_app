@@ -16,6 +16,7 @@ import '../../tv_shows/presentation/views/tv_shows_view.dart';
 import '../../watchlist/presentation/views/watchlist_view.dart';
 import '../presentation/pages/main_page.dart';
 import '../presentation/screens/remote_config_debug_screen.dart';
+import '../presentation/components/ads/ad_navigator_observer.dart';
 import 'app_routes.dart';
 
 
@@ -39,6 +40,7 @@ class AppRouter {
 
   static GoRouter router = GoRouter(
     initialLocation: splashPath,
+    observers: [AdNavigatorObserver()],
     routes: [
       // Splash Screen
       GoRoute(

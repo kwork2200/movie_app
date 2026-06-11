@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'dart:async';
 
 import '../../../core/domain/entities/media.dart';
 import '../../../core/domain/entities/media_details.dart';
@@ -14,6 +14,8 @@ import '../../../core/resources/app_strings.dart';
 import '../../../core/resources/app_values.dart';
 import '../../../core/resources/app_colors.dart';
 import '../../../core/services/service_locator.dart';
+import '../../../core/services/ad_service.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/enums.dart';
 import '../../../core/utils/functions.dart';
 import '../../../watchlist/presentation/controllers/watchlist_bloc/watchlist_bloc.dart';
@@ -26,6 +28,8 @@ import '../controllers/movie_details_bloc/movie_details_bloc.dart';
 import '../controllers/movies_bloc/movies_bloc.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
 import '../../../core/presentation/components/ads/native_ad_widget.dart';
+import '../../../core/presentation/components/ads/interstitial_ad_manager.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class MovieDetailsView extends StatelessWidget {
   final int movieId;
@@ -35,12 +39,23 @@ class MovieDetailsView extends StatelessWidget {
     required this.movieId,
   });
 
+  Future<void> _handleBack(BuildContext context) async {
+    await InterstitialAdManager.instance.showAdOnBack();
+    if (context.mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
           sl<MovieDetailsBloc>()..add(GetMovieDetailsEvent(movieId)),
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          await _handleBack(context);
+        },
+        child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -51,9 +66,7 @@ class MovieDetailsView extends StatelessWidget {
               left: AppPadding.p16,
             ),
             child: InkWell(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
+              onTap: () => _handleBack(context),
               child: Container(
                 padding: const EdgeInsets.all(AppPadding.p8),
                 decoration: const BoxDecoration(
@@ -156,8 +169,8 @@ class MovieDetailsView extends StatelessWidget {
             },
           ),
         ),
-      ),
-    );
+      ),  // PopScope
+    ));
   }
 }
 
@@ -176,6 +189,9 @@ class MovieDetailsWidget extends StatelessWidget {
     final popularMovies = moviesBloc.state.status == RequestStatus.loaded 
         ? moviesBloc.state.movies[1] 
         : <Media>[];
+    final topRatedMovies = moviesBloc.state.status == RequestStatus.loaded 
+        ? moviesBloc.state.movies[2] 
+        : <Media>[];
     
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -190,11 +206,12 @@ class MovieDetailsWidget extends StatelessWidget {
           // Native Ad after overview (Movie Details)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'movie_details'),
+            child: NativeAdWidget(adKey: 'movie_details',height: 160, size: NativeAdSize.small),
           ),
           _getCast(movieDetails.cast),
           _getReviews(movieDetails.reviews),
           _getSimilarSection(movieDetails.similar, popularMovies),
+          _getMostViewedSection(topRatedMovies),
           const SizedBox(height: AppSize.s8),
         ],
       ),
@@ -208,20 +225,63 @@ class MovieDetailsWidget extends StatelessWidget {
         : popularMovies;
     
     if (moviesList.isNotEmpty) {
+      // Build items list with a native ad placeholder after every 2 cards
+      final items = _buildItemsWithAds(moviesList);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SectionTitle(title: AppStrings.similar),
-          SectionListView(
+          SizedBox(
             height: AppSize.s240,
-            itemCount: moviesList.length,
-            itemBuilder: (context, index) =>
-                SectionListViewCard(media: moviesList[index]),
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppPadding.p16),
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: AppSize.s10),
+              itemBuilder: (context, index) => items[index],
+            ),
           ),
         ],
       );
     }
     return const SizedBox();
+  }
+  
+  Widget _getMostViewedSection(List<Media> topRatedMovies) {
+    if (topRatedMovies.isNotEmpty) {
+      final items = _buildItemsWithAds(topRatedMovies);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionTitle(title: 'Most Viewed'),
+          SizedBox(
+            height: AppSize.s240,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppPadding.p16),
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: AppSize.s10),
+              itemBuilder: (context, index) => items[index],
+            ),
+          ),
+        ],
+      );
+    }
+    return const SizedBox();
+  }
+
+  /// Builds a flat list of widgets: every 2 media cards are followed by a
+  /// native ad card of the same height (AppSize.s240) and a comfortable width.
+  List<Widget> _buildItemsWithAds(List<Media> mediaList) {
+    final List<Widget> items = [];
+    for (int i = 0; i < mediaList.length; i++) {
+      items.add(SectionListViewCard(media: mediaList[i]));
+      // Insert ad after every 2nd card (index 1, 3, 5 …)
+      if ((i + 1) % 2 == 0) {
+        items.add(const _InlineNativeAdCard());
+      }
+    }
+    return items;
   }
 }
 
@@ -263,5 +323,89 @@ Widget _getReviews(List<Review>? reviews) {
     );
   } else {
     return const SizedBox();
+  }
+}
+
+/// A native ad card sized to fit inside the horizontal Similar/Most Viewed rows.
+/// Width: ~160px (wider than a movie card so the ad has room to render properly).
+/// Height: constrained by the parent SizedBox (AppSize.s240).
+class _InlineNativeAdCard extends StatefulWidget {
+  const _InlineNativeAdCard();
+
+  @override
+  State<_InlineNativeAdCard> createState() => _InlineNativeAdCardState();
+}
+
+class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
+  NativeAd? _nativeAd;
+  bool _isAdLoaded = false;
+  bool _hasError = false;
+  StreamSubscription? _sub;
+  bool _shouldShow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _shouldShow = AdService.instance.shouldShowNativeAdMovieDetails;
+    if (_shouldShow) _load();
+
+    _sub = RemoteConfigService.instance.configUpdates.listen((_) {
+      if (!mounted) return;
+      final newVal = AdService.instance.shouldShowNativeAdMovieDetails;
+      if (newVal != _shouldShow) {
+        setState(() => _shouldShow = newVal);
+        if (newVal && !_isAdLoaded && !_hasError) {
+          _load();
+        } else if (!newVal) {
+          _nativeAd?.dispose();
+          _nativeAd = null;
+          setState(() => _isAdLoaded = false);
+        }
+      }
+    });
+  }
+
+  void _load() {
+    _nativeAd = AdService.instance.createNativeAd(
+      onAdLoaded: (ad) {
+        if (mounted) setState(() => _isAdLoaded = true);
+      },
+      onAdFailedToLoad: (ad, error) {
+        ad.dispose();
+        if (mounted) setState(() => _hasError = true);
+      },
+    );
+    _nativeAd?.load();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    _nativeAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_shouldShow || _hasError || !_isAdLoaded || _nativeAd == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Width slightly larger than a movie card (s120) so the ad renders well
+    // Height is controlled by the parent row (AppSize.s240)
+    return SizedBox(
+      width: AppSize.s160,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(AppSize.s8),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSize.s8),
+          child: AdWidget(ad: _nativeAd!),
+        ),
+      ),
+    );
   }
 }

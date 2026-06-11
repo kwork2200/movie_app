@@ -66,11 +66,11 @@ class AdService {
   }
 
   bool get shouldShowNativeAdMoviesHome2 {
-    return RemoteConfigService.instance.showNativeAdMoviesHome2;
+    return RemoteConfigService.instance.showNativeAdMoviesHome1;
   }
 
   bool get shouldShowNativeAdMoviesHome3 {
-    return RemoteConfigService.instance.showNativeAdMoviesHome3;
+    return RemoteConfigService.instance.showNativeAdMoviesHome1;
   }
 
   bool get shouldShowNativeAdTVShowsHome {
@@ -123,10 +123,11 @@ class AdService {
   BannerAd createBannerAd({
     required Function(Ad ad) onAdLoaded,
     required Function(Ad ad, LoadAdError error) onAdFailedToLoad,
+    AdSize? size,
   }) {
     return BannerAd(
       adUnitId: bannerAdUnitId,
-      size: AdSize.banner,
+      size: size ?? AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: onAdLoaded,
@@ -163,10 +164,13 @@ class AdService {
   NativeAd createNativeAd({
     required Function(Ad ad) onAdLoaded,
     required Function(Ad ad, LoadAdError error) onAdFailedToLoad,
+    String factoryId = 'nativeAd',
+
   }) {
     return NativeAd(
       adUnitId: nativeAdUnitId,
-      factoryId: 'listTile',
+      // factoryId: 'listTile',
+      factoryId: factoryId,
       request: const AdRequest(),
       listener: NativeAdListener(
         onAdLoaded: onAdLoaded,

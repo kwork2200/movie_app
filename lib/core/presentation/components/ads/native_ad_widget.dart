@@ -4,14 +4,19 @@ import 'dart:async';
 import '../../../services/ad_service.dart';
 import '../../../services/remote_config_service.dart';
 
-/// Reusable Native Ad Widget with real-time Remote Config updates
-/// Note: Native ads require platform-specific factory setup
-/// This widget will gracefully hide if native ads can't load
+enum NativeAdSize { small, large }
+
 class NativeAdWidget extends StatefulWidget {
   final double height;
-  final String? adKey; // Screen-specific key like 'login_signup', 'movies_home_1', etc.
+  final String? adKey;
+  final NativeAdSize size;
 
-  const NativeAdWidget({super.key, this.height = 300, this.adKey});
+  const NativeAdWidget({
+    super.key,
+    this.height = 300,
+    this.adKey,
+    this.size = NativeAdSize.large,
+  });
 
   @override
   State<NativeAdWidget> createState() => _NativeAdWidgetState();
@@ -24,21 +29,19 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   StreamSubscription? _configSubscription;
   bool _shouldShowAds = false;
 
+  bool get _isSmall => widget.size == NativeAdSize.small;
+  double get _adHeight => _isSmall ? 80.0 : widget.height;
+
   @override
   void initState() {
     super.initState();
     _shouldShowAds = _getAdVisibility();
-
-    if (_shouldShowAds) {
-      _loadNativeAd();
-    }
-    
-    // Listen to Remote Config changes
+    if (_shouldShowAds) _loadNativeAd();
     _configSubscription = RemoteConfigService.instance.configUpdates.listen((_) {
       _handleConfigUpdate();
     });
   }
-  
+
   bool _getAdVisibility() {
     switch (widget.adKey) {
       case 'language_selection':
@@ -75,22 +78,14 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
         return AdService.instance.shouldShowNativeAds;
     }
   }
-  
+
   void _handleConfigUpdate() {
     final newValue = _getAdVisibility();
-    
-    // If value changed
     if (newValue != _shouldShowAds) {
-      setState(() {
-        _shouldShowAds = newValue;
-      });
-      
+      setState(() => _shouldShowAds = newValue);
       if (_shouldShowAds) {
-        print('📢 Native ads ${widget.adKey ?? 'default'} enabled via Remote Config');
         _loadNativeAd();
       } else {
-        // Ads disabled, dispose current ad
-        print('🚫 Native ads ${widget.adKey ?? 'default'} disabled via Remote Config');
         _nativeAd?.dispose();
         _nativeAd = null;
         setState(() {
@@ -104,33 +99,18 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   void _loadNativeAd() {
     try {
       _nativeAd = AdService.instance.createNativeAd(
+        factoryId: _isSmall ? 'smallNativeAd' : 'nativeAd',
         onAdLoaded: (ad) {
-          if (mounted) {
-            setState(() {
-              _isAdLoaded = true;
-              _hasError = false;
-            });
-            print('✅ Native ad ${widget.adKey ?? 'default'} loaded');
-          }
+          if (mounted) setState(() { _isAdLoaded = true; _hasError = false; });
         },
         onAdFailedToLoad: (ad, error) {
-          print('⚠️ Native ad ${widget.adKey ?? 'default'} failed to load: $error');
-          if (mounted) {
-            setState(() {
-              _hasError = true;
-            });
-          }
+          if (mounted) setState(() => _hasError = true);
           ad.dispose();
         },
       );
       _nativeAd?.load();
     } catch (e) {
-      print('⚠️ Native ad ${widget.adKey ?? 'default'} error: $e');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-        });
-      }
+      if (mounted) setState(() => _hasError = true);
     }
   }
 
@@ -143,24 +123,19 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_shouldShowAds) {
-      return const SizedBox.shrink();
-    }
-
-    if (_hasError || !_isAdLoaded || _nativeAd == null) {
+    if (!_shouldShowAds || _hasError || !_isAdLoaded || _nativeAd == null) {
       return const SizedBox.shrink();
     }
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: widget.height < 100 ? EdgeInsets.zero : const EdgeInsets.all(8),
+      padding: _isSmall ? EdgeInsets.zero : const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
-      height: widget.height,
+      height: _adHeight,
       child: AdWidget(ad: _nativeAd!),
     );
   }

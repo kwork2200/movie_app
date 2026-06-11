@@ -53,11 +53,11 @@ class SearchWidget extends StatelessWidget {
                         return Expanded(
                           child: Column(
                             children: [
-                              // Native Ad before search results
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: NativeAdWidget(adKey: 'search'),
-                              ),
+                              // // Native Ad before search results
+                              // const Padding(
+                              //   padding: EdgeInsets.symmetric(vertical: 8),
+                              //   child: NativeAdWidget(adKey: 'search',        height: AppSize.s175,),
+                              // ),
                               Expanded(
                                 child: SearchGridView(results: state.searchResults),
                               ),

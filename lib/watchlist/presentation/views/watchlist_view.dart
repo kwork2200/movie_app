@@ -51,31 +51,34 @@ class WatchlistWidget extends StatelessWidget {
   const WatchlistWidget({super.key, required this.items});
 
   final List<Media> items;
+  static const int _adIndex = 1;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Native Ad at top
-        const Padding(
-          padding: EdgeInsets.all(12),
-          child: NativeAdWidget(adKey: 'watchlist'),
-        ),
-        Expanded(
-          child: ListView.separated(
-            itemCount: items.length,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppPadding.p12,
-              vertical: AppPadding.p6,
-            ),
-            itemBuilder: (context, index) {
-              return VerticalListViewCard(media: items[index]);
-            },
-            separatorBuilder: (context, index) => const SizedBox(height: AppSize.s10),
-          ),
-        ),
-      ],
+    final int itemCount = items.length + 1; // Always add one ad
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListView.separated(
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (index == _adIndex) {
+            return const NativeAdWidget(
+              adKey: 'watchlist',
+              size: NativeAdSize.small,
+              height: AppSize.s175,
+            );
+          }
+
+          final mediaIndex = index > _adIndex ? index - 1 : index;
+
+          return VerticalListViewCard(
+            media: items[mediaIndex],
+          );
+        },
+        separatorBuilder: (_, __) =>
+        const SizedBox(height: AppSize.s10),
+      ),
     );
   }
 }

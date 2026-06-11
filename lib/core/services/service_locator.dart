@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../onboarding/data/services/onboarding_storage_service.dart';
 import 'ad_service.dart';
+import 'network_service.dart';
 import '../presentation/components/ads/interstitial_ad_manager.dart';
 import '../../movies/data/datasource/movies_remote_data_source.dart';
 import '../../movies/data/repository/movies_repository_impl.dart';
@@ -51,6 +52,9 @@ class ServiceLocator {
   ServiceLocator._();
 
   static Future<void> init() async {
+    // Initialize Network Service first
+    await NetworkService().initialize();
+    
     // Initialize Ad Service
     await AdService.instance.initialize();
     

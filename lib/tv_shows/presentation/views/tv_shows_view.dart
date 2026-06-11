@@ -80,7 +80,7 @@ class TVShowsWidget extends StatelessWidget {
           // Native Ad after slider
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'tv_shows_home'),
+            child: NativeAdWidget(adKey: 'tv_shows_home', size: NativeAdSize.small),
           ),
           SectionHeader(
             title: AppStrings.popularShows,
@@ -108,6 +108,50 @@ class TVShowsWidget extends StatelessWidget {
               return SectionListViewCard(media: topRatedTvShows[index]);
             },
           ),
+          NativeAdWidget(height: AppSize.s175, adKey: 'tv_shows_home', size: NativeAdSize.small),
+          // Trending Section
+          SectionHeader(
+            title: 'Trending Now',
+            onSeeAllTap: () {
+              context.goNamed(AppRoutes.popularMoviesRoute);
+            },
+          ),
+          SectionListView(
+            height: AppSize.s240,
+            itemCount: popularTvShows.length,
+            itemBuilder: (context, index) {
+              return SectionListViewCard(media: popularTvShows[index]);
+            },
+          ),
+          SectionHeader(
+            title: 'Upcoming Shows',
+            onSeeAllTap: () {
+              context.goNamed(AppRoutes.popularMoviesRoute);
+            },
+          ),
+          SectionListView(
+            height: AppSize.s240,
+            itemCount: topRatedTvShows.length,
+            itemBuilder: (context, index) {
+              return SectionListViewCard(media: topRatedTvShows[index]);
+            },
+          ),
+          NativeAdWidget(height: AppSize.s175, adKey: 'tv_shows_home', size: NativeAdSize.small),
+          // Action Section
+          SectionHeader(
+            title: 'Action & Adventure',
+            onSeeAllTap: () {
+              context.goNamed(AppRoutes.topRatedMoviesRoute);
+            },
+          ),
+          SectionListView(
+            height: AppSize.s240,
+            itemCount: popularTvShows.length,
+            itemBuilder: (context, index) {
+              return SectionListViewCard(media: popularTvShows[index]);
+            },
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );

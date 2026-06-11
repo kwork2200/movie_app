@@ -153,8 +153,7 @@ class RemoteConfigService {
     }
   }
 
-  // Screen-specific native ad getters (15 total ad positions)
-  
+
   bool get showNativeAdLanguageSelection {
     try {
       return _remoteConfig.getBool('show_native_ad_language_selection');
@@ -187,21 +186,21 @@ class RemoteConfigService {
     }
   }
 
-  bool get showNativeAdMoviesHome2 {
-    try {
-      return _remoteConfig.getBool('show_native_ad_movies_home_2');
-    } catch (e) {
-      return _defaults['show_native_ad_movies_home_2'] as bool;
-    }
-  }
-
-  bool get showNativeAdMoviesHome3 {
-    try {
-      return _remoteConfig.getBool('show_native_ad_movies_home_3');
-    } catch (e) {
-      return _defaults['show_native_ad_movies_home_3'] as bool;
-    }
-  }
+  // bool get showNativeAdMoviesHome2 {
+  //   try {
+  //     return _remoteConfig.getBool('show_native_ad_movies_home_2');
+  //   } catch (e) {
+  //     return _defaults['show_native_ad_movies_home_2'] as bool;
+  //   }
+  // }
+  //
+  // bool get showNativeAdMoviesHome3 {
+  //   try {
+  //     return _remoteConfig.getBool('show_native_ad_movies_home_3');
+  //   } catch (e) {
+  //     return _defaults['show_native_ad_movies_home_3'] as bool;
+  //   }
+  // }
 
   bool get showNativeAdTVShowsHome {
     try {
@@ -365,8 +364,8 @@ class RemoteConfigService {
     print('  - Login/Signup Ad: $showNativeAdLoginSignup');
     print('  - Profile Setup Ad: $showNativeAdProfileSetup');
     print('  - Movies Home Ad 1: $showNativeAdMoviesHome1');
-    print('  - Movies Home Ad 2: $showNativeAdMoviesHome2');
-    print('  - Movies Home Ad 3: $showNativeAdMoviesHome3');
+    // print('  - Movies Home Ad 2: $showNativeAdMoviesHome2');
+    // print('  - Movies Home Ad 3: $showNativeAdMoviesHome3');
     print('  - TV Shows Home Ad: $showNativeAdTVShowsHome');
     print('  - Search Ad: $showNativeAdSearch');
     print('  - Watchlist Ad: $showNativeAdWatchlist');
@@ -389,8 +388,8 @@ class RemoteConfigService {
       'show_native_ad_login_signup': showNativeAdLoginSignup,
       'show_native_ad_profile_setup': showNativeAdProfileSetup,
       'show_native_ad_movies_home_1': showNativeAdMoviesHome1,
-      'show_native_ad_movies_home_2': showNativeAdMoviesHome2,
-      'show_native_ad_movies_home_3': showNativeAdMoviesHome3,
+      'show_native_ad_movies_home_2': showNativeAdMoviesHome1,
+      'show_native_ad_movies_home_3': showNativeAdMoviesHome1,
       'show_native_ad_tv_shows_home': showNativeAdTVShowsHome,
       'show_native_ad_search': showNativeAdSearch,
       'show_native_ad_watchlist': showNativeAdWatchlist,

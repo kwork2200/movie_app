@@ -12,6 +12,7 @@ import 'core/resources/app_strings.dart';
 import 'core/resources/app_theme.dart';
 import 'core/services/service_locator.dart';
 import 'core/services/remote_config_service.dart';
+import 'core/presentation/components/network_aware_widget.dart';
 import 'movies/presentation/controllers/movies_bloc/movies_bloc.dart';
 import 'movies/presentation/controllers/movies_bloc/movies_event.dart';
 
@@ -61,22 +62,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: AppStrings.appTitle,
-      theme: // main.dart ya app_theme.dart
-      ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF090C14),
-        primaryColor: const Color(0xFFE8B84B),
-        colorScheme: ColorScheme.dark(
-          background: const Color(0xFF090C14),
-          surface: const Color(0xFF0F1422),
-          primary: const Color(0xFFE8B84B),
-          secondary: const Color(0xFFC084FC),
+    return NetworkAwareWidget(
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: AppStrings.appTitle,
+        theme: // main.dart ya app_theme.dart
+        ThemeData(
+          scaffoldBackgroundColor: const Color(0xFF090C14),
+          primaryColor: const Color(0xFFE8B84B),
+          colorScheme: ColorScheme.dark(
+            background: const Color(0xFF090C14),
+            surface: const Color(0xFF0F1422),
+            primary: const Color(0xFFE8B84B),
+            secondary: const Color(0xFFC084FC),
+          ),
+          fontFamily: 'DMSans',
         ),
-        fontFamily: 'DMSans',
+        routerConfig: AppRouter.router,
       ),
-      routerConfig: AppRouter.router,
     );
   }
 }
