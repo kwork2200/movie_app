@@ -42,31 +42,26 @@ class AppRouter {
     initialLocation: splashPath,
     observers: [AdNavigatorObserver()],
     routes: [
-      // Splash Screen
       GoRoute(
         path: splashPath,
         pageBuilder: (context, state) =>
             const NoTransitionPage(child: SplashScreen()),
       ),
-      // Info Screen (standalone, not in shell route)
       GoRoute(
         path: infoPath,
         pageBuilder: (context, state) =>
             const CupertinoPage(child: InfoScreen()),
       ),
-      // Language Selection Screen
       GoRoute(
         path: languageSelectionPath,
         pageBuilder: (context, state) =>
             const CupertinoPage(child: LanguageSelectionScreen()),
       ),
-      // Remote Config Debug Screen
       GoRoute(
         path: remoteConfigDebugPath,
         pageBuilder: (context, state) =>
             const CupertinoPage(child: RemoteConfigDebugScreen()),
       ),
-      // Main App Shell
       ShellRoute(
         builder: (context, state, child) => MainPage(child: child),
         routes: [

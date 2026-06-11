@@ -29,13 +29,25 @@ import '../../../core/presentation/components/ads/native_ad_widget.dart';
 import '../../../core/presentation/components/ads/interstitial_ad_manager.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-class TVShowDetailsView extends StatelessWidget {
+class TVShowDetailsView extends StatefulWidget {
   const TVShowDetailsView({
     super.key,
     required this.tvShowId,
   });
 
   final int tvShowId;
+
+  @override
+  State<TVShowDetailsView> createState() => _TVShowDetailsViewState();
+}
+
+class _TVShowDetailsViewState extends State<TVShowDetailsView> {
+  @override
+  void initState() {
+    super.initState();
+    // Preload ad so it's ready when user taps back
+    InterstitialAdManager.instance.loadAd();
+  }
 
   Future<void> _handleBack(BuildContext context) async {
     await InterstitialAdManager.instance.showAdOnBack();
@@ -46,7 +58,7 @@ class TVShowDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          sl<TVShowDetailsBloc>()..add(GetTVShowDetailsEvent(tvShowId)),
+          sl<TVShowDetailsBloc>()..add(GetTVShowDetailsEvent(widget.tvShowId)),
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
@@ -148,6 +160,7 @@ class TVShowDetailsView extends StatelessWidget {
           ],
         ),
         body: AdEnabledScreen(
+          showInterstitialOnEnter: false,
           child: BlocBuilder<TVShowDetailsBloc, TVShowDetailsState>(
             builder: (context, state) {
               switch (state.tvShowDetailsStatus) {
@@ -160,7 +173,7 @@ class TVShowDetailsView extends StatelessWidget {
                     onTryAgainPressed: () {
                       context
                           .read<TVShowDetailsBloc>()
-                          .add(GetTVShowDetailsEvent(tvShowId));
+                          .add(GetTVShowDetailsEvent(widget.tvShowId));
                     },
                   );
               }

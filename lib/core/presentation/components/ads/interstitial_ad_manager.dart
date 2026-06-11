@@ -9,7 +9,6 @@ class InterstitialAdManager {
   static InterstitialAdManager get instance => _instance ??= InterstitialAdManager._();
 
   InterstitialAdManager._() {
-    // Listen to Remote Config changes
     _configSubscription = RemoteConfigService.instance.configUpdates.listen((_) {
       _handleConfigUpdate();
     });
@@ -18,22 +17,16 @@ class InterstitialAdManager {
   InterstitialAd? _interstitialAd;
   bool _isAdLoading = false;
   int _screenCounter = 0;
-  int _backCounter = 0;
   StreamSubscription? _configSubscription;
-  
+
   void _handleConfigUpdate() {
     final shouldShow = AdService.instance.shouldShowInterstitialAds;
-    
-    // If ads were disabled via Remote Config
     if (!shouldShow) {
       print('🚫 Interstitial ads disabled via Remote Config');
       _interstitialAd?.dispose();
       _interstitialAd = null;
       _isAdLoading = false;
-      _backCounter = 0;
-    }
-    // If ads were enabled via Remote Config
-    else {
+    } else {
       print('📢 Interstitial ads enabled via Remote Config');
       if (_interstitialAd == null && !_isAdLoading) {
         loadAd();
@@ -41,15 +34,12 @@ class InterstitialAdManager {
     }
   }
 
-  /// Get ad frequency from Remote Config
   int get _adFrequency => AdService.instance.interstitialAdFrequency;
 
   /// Load the interstitial ad
   Future<void> loadAd() async {
     if (_isAdLoading || _interstitialAd != null) return;
-
     _isAdLoading = true;
-    
     try {
       await InterstitialAd.load(
         adUnitId: AdService.instance.interstitialAdUnitId,
@@ -59,21 +49,6 @@ class InterstitialAdManager {
             _interstitialAd = ad;
             _isAdLoading = false;
             print('✅ Interstitial ad loaded');
-
-            // Set up callbacks
-            _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-              onAdDismissedFullScreenContent: (ad) {
-                ad.dispose();
-                _interstitialAd = null;
-                loadAd(); // Preload next ad
-              },
-              onAdFailedToShowFullScreenContent: (ad, error) {
-                print('❌ Failed to show interstitial ad: $error');
-                ad.dispose();
-                _interstitialAd = null;
-                loadAd(); // Try to load again
-              },
-            );
           },
           onAdFailedToLoad: (error) {
             print('❌ Interstitial ad failed to load: $error');
@@ -88,55 +63,82 @@ class InterstitialAdManager {
     }
   }
 
-  /// Show the interstitial ad if loaded and frequency met
+  /// Show interstitial ad on screen enter (with frequency control)
   Future<void> showAdIfAvailable() async {
-    // Check Remote Config flag first
-    if (!AdService.instance.shouldShowInterstitialAds) {
-      print('⏭️ Interstitial ads disabled in Remote Config');
-      return;
-    }
+    if (!AdService.instance.shouldShowInterstitialAds) return;
 
     _screenCounter++;
-    
     if (_screenCounter % _adFrequency != 0) {
       print('⏭️ Skipping ad (counter: $_screenCounter, frequency: $_adFrequency)');
       return;
     }
 
-    if (_interstitialAd != null) {
-      await _interstitialAd!.show();
-      _screenCounter = 0;
-    } else {
+    if (_interstitialAd == null) {
       print('⚠️ Interstitial ad not ready yet');
       await loadAd();
+      return;
     }
+
+    final completer = Completer<void>();
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+        _screenCounter = 0;
+        loadAd();
+        if (!completer.isCompleted) completer.complete();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        print('❌ Failed to show interstitial ad: $error');
+        ad.dispose();
+        _interstitialAd = null;
+        loadAd();
+        if (!completer.isCompleted) completer.complete();
+      },
+    );
+    await _interstitialAd!.show();
+    await completer.future;
   }
 
-  /// Show interstitial ad on back navigation (system back / screen back arrow)
+  /// Show interstitial ad on back navigation — ALWAYS shows if ad is ready.
+  /// Waits for the ad to be fully dismissed before returning,
+  /// so the caller pops the route only after the user closes the ad.
   Future<void> showAdOnBack() async {
     if (!AdService.instance.shouldShowInterstitialAds) {
-      print('⏭️ Interstitial ads disabled in Remote Config (back)');
+      print('⏭️ Interstitial ads disabled (back)');
       return;
     }
 
-    _backCounter++;
-
-    if (_backCounter % _adFrequency != 0) {
-      print('⏭️ Skipping back-nav ad (counter: $_backCounter, frequency: $_adFrequency)');
+    if (_interstitialAd == null) {
+      print('⚠️ Interstitial ad not ready (back) — navigating without ad');
+      // Kick off a load for next time
+      loadAd();
       return;
     }
 
-    if (_interstitialAd != null) {
-      print('📺 Showing interstitial ad on back navigation');
-      await _interstitialAd!.show();
-      _backCounter = 0;
-    } else {
-      print('⚠️ Interstitial ad not ready yet (back)');
-      await loadAd();
-    }
+    print('📺 Showing interstitial ad on back navigation');
+    final completer = Completer<void>();
+
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+        loadAd(); // Preload for next screen
+        if (!completer.isCompleted) completer.complete();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        print('❌ Failed to show interstitial ad on back: $error');
+        ad.dispose();
+        _interstitialAd = null;
+        loadAd();
+        if (!completer.isCompleted) completer.complete();
+      },
+    );
+
+    await _interstitialAd!.show();
+    await completer.future; // Wait until user closes the ad, then pop
   }
 
-  /// Dispose the ad and clean up resources
   void dispose() {
     _configSubscription?.cancel();
     _interstitialAd?.dispose();

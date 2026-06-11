@@ -31,13 +31,24 @@ import '../../../core/presentation/components/ads/native_ad_widget.dart';
 import '../../../core/presentation/components/ads/interstitial_ad_manager.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-class MovieDetailsView extends StatelessWidget {
+class MovieDetailsView extends StatefulWidget {
   final int movieId;
 
   const MovieDetailsView({
     super.key,
     required this.movieId,
   });
+
+  @override
+  State<MovieDetailsView> createState() => _MovieDetailsViewState();
+}
+
+class _MovieDetailsViewState extends State<MovieDetailsView> {
+  @override
+  void initState() {
+    super.initState();
+    InterstitialAdManager.instance.loadAd();
+  }
 
   Future<void> _handleBack(BuildContext context) async {
     await InterstitialAdManager.instance.showAdOnBack();
@@ -48,7 +59,7 @@ class MovieDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          sl<MovieDetailsBloc>()..add(GetMovieDetailsEvent(movieId)),
+          sl<MovieDetailsBloc>()..add(GetMovieDetailsEvent(widget.movieId)),
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
@@ -89,7 +100,6 @@ class MovieDetailsView extends StatelessWidget {
                 }
                 final mediaDetails = state.movieDetails!;
                 
-                // Check bookmark status on load
                 context.read<WatchlistBloc>().add(
                   CheckBookmarkEvent(tmdbId: mediaDetails.tmdbID),
                 );
@@ -150,6 +160,7 @@ class MovieDetailsView extends StatelessWidget {
           ],
         ),
         body: AdEnabledScreen(
+          showInterstitialOnEnter: false,
           child: BlocBuilder<MovieDetailsBloc, MovieDetailsState>(
             builder: (context, state) {
               switch (state.status) {
@@ -162,7 +173,7 @@ class MovieDetailsView extends StatelessWidget {
                     onTryAgainPressed: () {
                       context
                           .read<MovieDetailsBloc>()
-                          .add(GetMovieDetailsEvent(movieId));
+                          .add(GetMovieDetailsEvent(widget.movieId));
                     },
                   );
               }
