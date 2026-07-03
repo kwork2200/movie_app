@@ -219,10 +219,7 @@ class TVShowDetailsWidget extends StatelessWidget {
           ),
           getOverviewSection(tvShowDetails.overview),
           // Native Ad after overview (TV Show Details) k
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'tv_show_details',height: AppSize.s175, size: NativeAdSize.small),
-          ),
+          NativeAdWidget(adKey: 'tv_show_details',height: AppSize.s175, size: NativeAdSize.small),
           const SectionTitle(title: AppStrings.lastEpisodeOnAir),
           EpisodeCard(episode: tvShowDetails.lastEpisodeToAir!),
           const SectionTitle(title: AppStrings.seasons),

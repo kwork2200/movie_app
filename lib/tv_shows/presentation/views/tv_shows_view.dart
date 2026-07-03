@@ -78,10 +78,7 @@ class TVShowsWidget extends StatelessWidget {
             },
           ),
           // Native Ad after slider
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'tv_shows_home', size: NativeAdSize.small),
-          ),
+          NativeAdWidget(adKey: 'tv_shows_home', size: NativeAdSize.small),
           SectionHeader(
             title: AppStrings.popularShows,
             onSeeAllTap: () {

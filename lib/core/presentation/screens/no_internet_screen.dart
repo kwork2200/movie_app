@@ -377,8 +377,10 @@ class _NoInternetScreenState extends State<NoInternetScreen>
                                     await Future.delayed(
                                       const Duration(seconds: 2),
                                     );
-                                    setState(
-                                            () => _isRetrying = false);
+                                    if (mounted) {
+                                      setState(
+                                              () => _isRetrying = false);
+                                    }
                                     // TODO: add real retry logic here
                                   },
                                   icon: _isRetrying

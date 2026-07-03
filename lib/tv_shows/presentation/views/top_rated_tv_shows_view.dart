@@ -67,10 +67,7 @@ class TopRatedTVShowsWidget extends StatelessWidget {
     return Column(
       children: [
         // Native Ad at top
-        const Padding(
-          padding: EdgeInsets.all(12),
-          child: NativeAdWidget(adKey: 'top_rated_tv_shows'),
-        ),
+        NativeAdWidget(adKey: 'top_rated_tv_shows'),
         Expanded(
           child: VerticalListView(
             itemCount: tvShows.length + 1,

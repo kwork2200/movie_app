@@ -215,10 +215,7 @@ class MovieDetailsWidget extends StatelessWidget {
           ),
           getOverviewSection(movieDetails.overview),
           // Native Ad after overview (Movie Details)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: NativeAdWidget(adKey: 'movie_details',height: 160, size: NativeAdSize.small),
-          ),
+          NativeAdWidget(adKey: 'movie_details',height: 160, size: NativeAdSize.small),
           _getCast(movieDetails.cast),
           _getReviews(movieDetails.reviews),
           _getSimilarSection(movieDetails.similar, popularMovies),
@@ -228,7 +225,7 @@ class MovieDetailsWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _getSimilarSection(List<Media>? similar, List<Media> popularMovies) {
     // Use similar movies if available, otherwise use popular movies
     final moviesList = (similar != null && similar.isNotEmpty) 
@@ -249,7 +246,7 @@ class MovieDetailsWidget extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(width: AppSize.s10),
-              itemBuilder: (context, index) => items[index],
+              itemBuilder: (context, index) => Center(child: items[index]),
             ),
           ),
         ],
@@ -272,7 +269,7 @@ class MovieDetailsWidget extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(width: AppSize.s10),
-              itemBuilder: (context, index) => items[index],
+              itemBuilder: (context, index) => Center(child: items[index]),
             ),
           ),
         ],
@@ -378,6 +375,7 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
 
   void _load() {
     _nativeAd = AdService.instance.createNativeAd(
+      factoryId:  'smallNativeAd',
       onAdLoaded: (ad) {
         if (mounted) setState(() => _isAdLoaded = true);
       },
@@ -402,20 +400,16 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
       return const SizedBox.shrink();
     }
 
-    // Width slightly larger than a movie card (s120) so the ad renders well
-    // Height is controlled by the parent row (AppSize.s240)
     return SizedBox(
       width: AppSize.s160,
+      height: AppSize.s70,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.3),
           borderRadius: BorderRadius.circular(AppSize.s8),
           border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppSize.s8),
-          child: AdWidget(ad: _nativeAd!),
-        ),
+        child: AdWidget(ad: _nativeAd!),
       ),
     );
   }

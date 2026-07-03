@@ -292,10 +292,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Native Ad
-            const Padding(
-              padding: EdgeInsets.only(bottom: 16),
-              child: NativeAdWidget(adKey: 'login_signup'),
-            ),
+            const NativeAdWidget(adKey: 'login_signup'),
             _fieldLabel('Phone Number'),
             _buildPhoneField(_loginPhoneController),
             const SizedBox(height: 16),
