@@ -19,7 +19,7 @@ import '../controllers/movies_bloc/movies_bloc.dart';
 import '../controllers/movies_bloc/movies_event.dart';
 import '../controllers/movies_bloc/movies_state.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
-import '../../../core/presentation/components/ads/native_ad_widget.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 
 class MoviesView extends StatelessWidget {
   const MoviesView({super.key});
@@ -86,7 +86,7 @@ class MoviesWidget extends StatelessWidget {
             },
           ),
           // Native Ad after slider (Movies Home position 1)
-          NativeAdWidget(height: AppSize.s175, adKey: 'movies_home_1', size: NativeAdSize.small),
+          HybridNativeAdWidget(height: AppSize.s175, adKey: 'movies_home_1'),
           SectionHeader(
             title: AppStrings.popularMovies,
             onSeeAllTap: () {
@@ -113,7 +113,7 @@ class MoviesWidget extends StatelessWidget {
               return SectionListViewCard(media: upcomingMovies[index]);
             },
           ),
-          NativeAdWidget(height: AppSize.s175, adKey: 'movies_home_2', size: NativeAdSize.small),
+          HybridNativeAdWidget(height: AppSize.s175, adKey: 'movies_home_1'),
           // Trending Section
           SectionHeader(
             title: 'Trending Now',
@@ -141,7 +141,7 @@ class MoviesWidget extends StatelessWidget {
               return SectionListViewCard(media: upcomingMovies[index]);
             },
           ),
-          NativeAdWidget(height: AppSize.s175, adKey: 'movies_home_3', size: NativeAdSize.small),
+          HybridNativeAdWidget(height: AppSize.s175, adKey: 'movies_home_1'),
           // Action Section
           SectionHeader(
             title: 'Action & Adventure',

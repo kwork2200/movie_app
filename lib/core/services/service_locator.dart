@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../onboarding/data/services/onboarding_storage_service.dart';
 import 'ad_service.dart';
+import 'fb_ad_service.dart';
 import 'network_service.dart';
 import '../presentation/components/ads/interstitial_ad_manager.dart';
 import '../../movies/data/datasource/movies_remote_data_source.dart';
@@ -39,7 +40,6 @@ import '../../watchlist/data/models/watchlist_item_model.dart';
 import '../../watchlist/data/repository/watchlist_repository_impl.dart';
 import '../../watchlist/domain/repository/watchlist_repository.dart';
 import '../../watchlist/domain/usecases/add_watchlist_item_usecase.dart';
-import '../../watchlist/domain/usecases/add_watchlist_item_usecase.dart';
 import '../../watchlist/domain/usecases/get_watchlist_items_usecase.dart';
 import '../../watchlist/domain/usecases/is_bookmarked_usecase.dart';
 import '../../watchlist/domain/usecases/remove_watchlist_item_usecase.dart';
@@ -55,8 +55,9 @@ class ServiceLocator {
     // Initialize Network Service first
     await NetworkService().initialize();
     
-    // Initialize Ad Service
+    // Initialize Ad Services
     await AdService.instance.initialize();
+    await FbAdService.instance.initialize();
     
     // Preload first interstitial ad
     InterstitialAdManager.instance.loadAd();

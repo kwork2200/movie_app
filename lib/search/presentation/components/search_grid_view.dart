@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/ads/native_ad_widget.dart';
 import '../../../core/resources/app_values.dart';
 import '../../domain/entities/search_result_item.dart';
@@ -62,10 +63,10 @@ class SearchGridView extends StatelessWidget {
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.only(bottom : 5 ),
-                  child: NativeAdWidget(
+                  child: HybridNativeAdWidget(
                     adKey: 'search',
-                    height: AppSize.s175,
-                      size: NativeAdSize.small
+                    height: AppSize.s150,
+                      // size: NativeAdSize.small
                   ),
                 ),
               ),

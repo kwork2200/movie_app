@@ -47,3 +47,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Facebook Audience Network SDK
+    implementation("com.facebook.android:audience-network-sdk:6.17.0")
+}

@@ -4,6 +4,7 @@ import 'dart:async';
 
 import '../../../core/domain/entities/media.dart';
 import '../../../core/domain/entities/media_details.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/details_card.dart';
 import '../../../core/presentation/components/error_screen.dart';
 import '../../../core/presentation/components/loading_indicator.dart';
@@ -29,6 +30,8 @@ import '../controllers/movies_bloc/movies_bloc.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
 import '../../../core/presentation/components/ads/native_ad_widget.dart';
 import '../../../core/presentation/components/ads/interstitial_ad_manager.dart';
+import '../../../core/presentation/components/ads/fb_native_ad_widget.dart';
+import '../../../core/services/fb_ad_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class MovieDetailsView extends StatefulWidget {
@@ -215,7 +218,7 @@ class MovieDetailsWidget extends StatelessWidget {
           ),
           getOverviewSection(movieDetails.overview),
           // Native Ad after overview (Movie Details)
-          NativeAdWidget(adKey: 'movie_details',height: 160, size: NativeAdSize.small),
+          HybridNativeAdWidget(adKey: 'movie_details',height: 160),
           _getCast(movieDetails.cast),
           _getReviews(movieDetails.reviews),
           _getSimilarSection(movieDetails.similar, popularMovies),
@@ -349,22 +352,33 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
   bool _isAdLoaded = false;
   bool _hasError = false;
   StreamSubscription? _sub;
-  bool _shouldShow = false;
+  bool _shouldShowGoogle = false;
+  bool _shouldShowFacebook = false;
+  bool _useGoogleAds = true;
 
   @override
   void initState() {
     super.initState();
-    _shouldShow = AdService.instance.shouldShowNativeAdMovieDetails;
-    if (_shouldShow) _load();
+    _updateAdSettings();
+    if (_shouldShowGoogle || _shouldShowFacebook) _load();
 
     _sub = RemoteConfigService.instance.configUpdates.listen((_) {
       if (!mounted) return;
-      final newVal = AdService.instance.shouldShowNativeAdMovieDetails;
-      if (newVal != _shouldShow) {
-        setState(() => _shouldShow = newVal);
-        if (newVal && !_isAdLoaded && !_hasError) {
+      final oldShowGoogle = _shouldShowGoogle;
+      final oldShowFacebook = _shouldShowFacebook;
+      final oldUseGoogle = _useGoogleAds;
+      
+      _updateAdSettings();
+      
+      if (oldShowGoogle != _shouldShowGoogle || 
+          oldShowFacebook != _shouldShowFacebook ||
+          oldUseGoogle != _useGoogleAds) {
+        setState(() {});
+        
+        // Reload ad if needed
+        if ((_shouldShowGoogle || _shouldShowFacebook) && !_isAdLoaded && !_hasError) {
           _load();
-        } else if (!newVal) {
+        } else if (!_shouldShowGoogle && !_shouldShowFacebook) {
           _nativeAd?.dispose();
           _nativeAd = null;
           setState(() => _isAdLoaded = false);
@@ -373,18 +387,27 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
     });
   }
 
+  void _updateAdSettings() {
+    final useFacebookAds = RemoteConfigService.instance.useFacebookAds;
+    _useGoogleAds = !useFacebookAds;
+    _shouldShowGoogle = _useGoogleAds && AdService.instance.shouldShowNativeAdMovieDetails;
+    _shouldShowFacebook = useFacebookAds && FbAdService.instance.shouldShowNativeAdMovieDetails;
+  }
+
   void _load() {
-    _nativeAd = AdService.instance.createNativeAd(
-      factoryId:  'smallNativeAd',
-      onAdLoaded: (ad) {
-        if (mounted) setState(() => _isAdLoaded = true);
-      },
-      onAdFailedToLoad: (ad, error) {
-        ad.dispose();
-        if (mounted) setState(() => _hasError = true);
-      },
-    );
-    _nativeAd?.load();
+    if (_shouldShowGoogle && _useGoogleAds) {
+      _nativeAd = AdService.instance.createNativeAd(
+        factoryId: 'smallNativeAd',
+        onAdLoaded: (ad) {
+          if (mounted) setState(() => _isAdLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (mounted) setState(() => _hasError = true);
+        },
+      );
+      _nativeAd?.load();
+    }
   }
 
   @override
@@ -396,21 +419,34 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_shouldShow || _hasError || !_isAdLoaded || _nativeAd == null) {
-      return const SizedBox.shrink();
+    if (_shouldShowGoogle && !_hasError && _isAdLoaded && _nativeAd != null) {
+      return SizedBox(
+        width: AppSize.s160,
+        height: AppSize.s70,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(AppSize.s8),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: AdWidget(ad: _nativeAd!),
+        ),
+      );
     }
 
-    return SizedBox(
-      width: AppSize.s160,
-      height: AppSize.s70,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(AppSize.s8),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+    // Show Facebook Native Ad
+    if (_shouldShowFacebook) {
+      return SizedBox(
+        width: AppSize.s160,
+        height: AppSize.s240,
+        child: FbNativeAdWidget(
+          height: AppSize.s70,
+          adKey: 'movie_details',
+          margin: EdgeInsets.zero,
         ),
-        child: AdWidget(ad: _nativeAd!),
-      ),
-    );
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }

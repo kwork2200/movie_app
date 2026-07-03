@@ -24,13 +24,15 @@ class RemoteConfigService {
     'show_banner_ads': true,
     'show_native_ads': true,
     
+    'use_facebook_ads': false,  // false = Use Google Ads first
+    'show_fb_banner_ads': true,
+    'show_fb_native_ads': true,
+    
     // Screen-specific native ad keys (14 keys for 14 screens)
     'show_native_ad_language_selection': true,
     'show_native_ad_login_signup': true,
     'show_native_ad_profile_setup': true,
     'show_native_ad_movies_home_1': true,
-    'show_native_ad_movies_home_2': true,
-    'show_native_ad_movies_home_3': true,
     'show_native_ad_tv_shows_home': true,
     'show_native_ad_search': true,
     'show_native_ad_watchlist': true,
@@ -41,11 +43,31 @@ class RemoteConfigService {
     'show_native_ad_top_rated_tv_shows': true,
     'show_native_ad_tv_show_details': true,
     
-    'show_interstitial_ads': true,
+    'show_fb_native_ad_language_selection': true,
+    'show_fb_native_ad_login_signup': true,
+    'show_fb_native_ad_profile_setup': true,
+    'show_fb_native_ad_movies_home_1': true,
+    'show_fb_native_ad_movies_home_2': true,
+    'show_fb_native_ad_movies_home_3': true,
+    'show_fb_native_ad_tv_shows_home': true,
+    'show_fb_native_ad_search': true,
+    'show_fb_native_ad_watchlist': true,
+    'show_fb_native_ad_popular_movies': true,
+    'show_fb_native_ad_top_rated_movies': true,
+    'show_fb_native_ad_movie_details': true,
+    'show_fb_native_ad_popular_tv_shows': true,
+    'show_fb_native_ad_top_rated_tv_shows': true,
+    'show_fb_native_ad_tv_show_details': true,
+    
+    'show_interstitial_ads': true,   // Google Ads interstitials enabled by default
+    'show_fb_interstitial_ads': true, // Facebook Ads interstitials enabled as fallback
     'interstitial_ad_frequency': 3,
     'android_banner_ad_id': 'ca-app-pub-3940256099942544/6300978111',
     'android_interstitial_ad_id': 'ca-app-pub-3940256099942544/1033173712',
     'android_native_ad_id': 'ca-app-pub-3940256099942544/2247696110',
+    'android_fb_banner_ad_id': 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
+    'android_fb_interstitial_ad_id': 'VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID',
+    'android_fb_native_ad_id': 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
   };
 
   /// Initialize Remote Config
@@ -134,6 +156,16 @@ class RemoteConfigService {
     _configUpdateController.close();
   }
 
+  /// Check if Facebook Ads should be used as primary/fallback
+  bool get useFacebookAds {
+    try {
+      return _remoteConfig.getBool('use_facebook_ads');
+    } catch (e) {
+      print('⚠️ Error getting use_facebook_ads: $e');
+      return _defaults['use_facebook_ads'] as bool;
+    }
+  }
+
   /// Check if banner ads should be shown
   bool get showBannerAds {
     try {
@@ -144,12 +176,30 @@ class RemoteConfigService {
     }
   }
 
+  bool get showFbBannerAds {
+    try {
+      return _remoteConfig.getBool('show_fb_banner_ads');
+    } catch (e) {
+      print('⚠️ Error getting show_fb_banner_ads: $e');
+      return _defaults['show_fb_banner_ads'] as bool;
+    }
+  }
+
   bool get showNativeAds {
     try {
       return _remoteConfig.getBool('show_native_ads');
     } catch (e) {
       print('⚠️ Error getting show_native_ads: $e');
       return _defaults['show_native_ads'] as bool;
+    }
+  }
+
+  bool get showFbNativeAds {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ads');
+    } catch (e) {
+      print('⚠️ Error getting show_fb_native_ads: $e');
+      return _defaults['show_fb_native_ads'] as bool;
     }
   }
 
@@ -274,6 +324,127 @@ class RemoteConfigService {
     }
   }
 
+  // Facebook Native Ads - Screen-specific getters
+  bool get showFbNativeAdLanguageSelection {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_language_selection');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_language_selection'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdLoginSignup {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_login_signup');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_login_signup'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdProfileSetup {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_profile_setup');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_profile_setup'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdMoviesHome1 {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_movies_home_1');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_movies_home_1'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdMoviesHome2 {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_movies_home_2');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_movies_home_2'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdMoviesHome3 {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_movies_home_3');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_movies_home_3'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdTVShowsHome {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_tv_shows_home');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_tv_shows_home'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdSearch {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_search');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_search'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdWatchlist {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_watchlist');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_watchlist'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdPopularMovies {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_popular_movies');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_popular_movies'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdTopRatedMovies {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_top_rated_movies');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_top_rated_movies'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdMovieDetails {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_movie_details');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_movie_details'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdPopularTVShows {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_popular_tv_shows');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_popular_tv_shows'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdTopRatedTVShows {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_top_rated_tv_shows');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_top_rated_tv_shows'] as bool;
+    }
+  }
+
+  bool get showFbNativeAdTVShowDetails {
+    try {
+      return _remoteConfig.getBool('show_fb_native_ad_tv_show_details');
+    } catch (e) {
+      return _defaults['show_fb_native_ad_tv_show_details'] as bool;
+    }
+  }
+
   /// Check if interstitial ads should be shown
   bool get showInterstitialAds {
     try {
@@ -281,6 +452,15 @@ class RemoteConfigService {
     } catch (e) {
       print('⚠️ Error getting show_interstitial_ads: $e');
       return _defaults['show_interstitial_ads'] as bool;
+    }
+  }
+
+  bool get showFbInterstitialAds {
+    try {
+      return _remoteConfig.getBool('show_fb_interstitial_ads');
+    } catch (e) {
+      print('⚠️ Error getting show_fb_interstitial_ads: $e');
+      return _defaults['show_fb_interstitial_ads'] as bool;
     }
   }
 
@@ -354,6 +534,64 @@ class RemoteConfigService {
     throw UnsupportedError('Unsupported platform');
   }
 
+  // Facebook Ad Unit IDs
+  String get fbBannerAdUnitId {
+    try {
+      if (Platform.isAndroid) {
+        return _remoteConfig.getString('android_fb_banner_ad_id');
+      } else if (Platform.isIOS) {
+        return _remoteConfig.getString('ios_fb_banner_ad_id');
+      }
+    } catch (e) {
+      print('⚠️ Error getting FB banner ad unit ID: $e');
+    }
+    
+    if (Platform.isAndroid) {
+      return _defaults['android_fb_banner_ad_id'] as String;
+    } else if (Platform.isIOS) {
+      return _defaults['ios_fb_banner_ad_id'] as String;
+    }
+    throw UnsupportedError('Unsupported platform');
+  }
+
+  String get fbInterstitialAdUnitId {
+    try {
+      if (Platform.isAndroid) {
+        return _remoteConfig.getString('android_fb_interstitial_ad_id');
+      } else if (Platform.isIOS) {
+        return _remoteConfig.getString('ios_fb_interstitial_ad_id');
+      }
+    } catch (e) {
+      print('⚠️ Error getting FB interstitial ad unit ID: $e');
+    }
+    
+    if (Platform.isAndroid) {
+      return _defaults['android_fb_interstitial_ad_id'] as String;
+    } else if (Platform.isIOS) {
+      return _defaults['ios_fb_interstitial_ad_id'] as String;
+    }
+    throw UnsupportedError('Unsupported platform');
+  }
+
+  String get fbNativeAdUnitId {
+    try {
+      if (Platform.isAndroid) {
+        return _remoteConfig.getString('android_fb_native_ad_id');
+      } else if (Platform.isIOS) {
+        return _remoteConfig.getString('ios_fb_native_ad_id');
+      }
+    } catch (e) {
+      print('⚠️ Error getting FB native ad unit ID: $e');
+    }
+    
+    if (Platform.isAndroid) {
+      return _defaults['android_fb_native_ad_id'] as String;
+    } else if (Platform.isIOS) {
+      return _defaults['ios_fb_native_ad_id'] as String;
+    }
+    throw UnsupportedError('Unsupported platform');
+  }
+
   // ==================== Debug ====================
 
   void _logCurrentValues() {
@@ -388,8 +626,6 @@ class RemoteConfigService {
       'show_native_ad_login_signup': showNativeAdLoginSignup,
       'show_native_ad_profile_setup': showNativeAdProfileSetup,
       'show_native_ad_movies_home_1': showNativeAdMoviesHome1,
-      'show_native_ad_movies_home_2': showNativeAdMoviesHome1,
-      'show_native_ad_movies_home_3': showNativeAdMoviesHome1,
       'show_native_ad_tv_shows_home': showNativeAdTVShowsHome,
       'show_native_ad_search': showNativeAdSearch,
       'show_native_ad_watchlist': showNativeAdWatchlist,

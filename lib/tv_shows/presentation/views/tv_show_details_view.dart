@@ -4,6 +4,7 @@ import 'dart:async';
 
 import '../../../core/domain/entities/media.dart';
 import '../../../core/domain/entities/media_details.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/details_card.dart';
 import '../../../core/presentation/components/error_screen.dart';
 import '../../../core/presentation/components/loading_indicator.dart';
@@ -219,7 +220,7 @@ class TVShowDetailsWidget extends StatelessWidget {
           ),
           getOverviewSection(tvShowDetails.overview),
           // Native Ad after overview (TV Show Details) k
-          NativeAdWidget(adKey: 'tv_show_details',height: AppSize.s175, size: NativeAdSize.small),
+          HybridNativeAdWidget(adKey: 'tv_show_details',height: AppSize.s175),
           const SectionTitle(title: AppStrings.lastEpisodeOnAir),
           EpisodeCard(episode: tvShowDetails.lastEpisodeToAir!),
           const SectionTitle(title: AppStrings.seasons),

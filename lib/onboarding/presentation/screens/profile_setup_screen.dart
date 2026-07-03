@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/services/service_locator.dart';
 import '../../data/services/onboarding_storage_service.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
@@ -281,7 +282,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen>
                             // Native Ad
                             const Padding(
                               padding: EdgeInsets.only(bottom: 24),
-                              child: NativeAdWidget(adKey: 'profile_setup'),
+                              child: HybridNativeAdWidget(adKey: 'profile_setup'),
                             ),
 
                             // Name field

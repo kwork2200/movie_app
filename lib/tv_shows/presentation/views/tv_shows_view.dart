@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/domain/entities/media.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/custom_slider.dart';
 import '../../../core/presentation/components/error_screen.dart';
 
@@ -78,7 +79,7 @@ class TVShowsWidget extends StatelessWidget {
             },
           ),
           // Native Ad after slider
-          NativeAdWidget(adKey: 'tv_shows_home', size: NativeAdSize.small),
+          HybridNativeAdWidget(adKey: 'tv_shows_home'),
           SectionHeader(
             title: AppStrings.popularShows,
             onSeeAllTap: () {
@@ -105,7 +106,7 @@ class TVShowsWidget extends StatelessWidget {
               return SectionListViewCard(media: topRatedTvShows[index]);
             },
           ),
-          NativeAdWidget(height: AppSize.s175, adKey: 'tv_shows_home', size: NativeAdSize.small),
+          HybridNativeAdWidget(height: AppSize.s175, adKey: 'tv_shows_home'),
           // Trending Section
           SectionHeader(
             title: 'Trending Now',
@@ -133,7 +134,7 @@ class TVShowsWidget extends StatelessWidget {
               return SectionListViewCard(media: topRatedTvShows[index]);
             },
           ),
-          NativeAdWidget(height: AppSize.s175, adKey: 'tv_shows_home', size: NativeAdSize.small),
+          HybridNativeAdWidget(height: AppSize.s175, adKey: 'tv_shows_home'),
           // Action Section
           SectionHeader(
             title: 'Action & Adventure',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/domain/entities/media.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/custom_app_bar.dart';
 import '../../../core/presentation/components/error_screen.dart';
 import '../../../core/presentation/components/loading_indicator.dart';
@@ -63,9 +64,9 @@ class WatchlistWidget extends StatelessWidget {
         itemCount: itemCount,
         itemBuilder: (context, index) {
           if (index == _adIndex) {
-            return const NativeAdWidget(
+            return const HybridNativeAdWidget(
               adKey: 'watchlist',
-              size: NativeAdSize.small,
+              // size: NativeAdSize.small,
               height: AppSize.s175,
             );
           }

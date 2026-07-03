@@ -10,14 +10,18 @@ class AdService {
 
   bool _isInitialized = false;
 
-  /// Initialize Mobile Ads SDK
+  /// Initialize Mobile Ads SDK with test device configuration
   Future<void> initialize() async {
     if (_isInitialized) return;
     
     try {
+      final testDeviceIds = ['A005DDD7741B829644732D7CE178E6AD'];
+      final requestConfiguration = RequestConfiguration(
+        testDeviceIds: testDeviceIds,
+      );
+      MobileAds.instance.updateRequestConfiguration(requestConfiguration);
       await MobileAds.instance.initialize();
       _isInitialized = true;
-      print('✅ AdService initialized successfully');
     } catch (e) {
       print('❌ AdService initialization failed: $e');
     }

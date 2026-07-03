@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/domain/entities/media.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/custom_app_bar.dart';
 import '../../../core/presentation/components/error_screen.dart';
 import '../../../core/presentation/components/loading_indicator.dart';
@@ -68,7 +69,7 @@ class PopularMoviesWidget extends StatelessWidget {
         return Column(
           children: [
             // Native Ad at top
-            NativeAdWidget(adKey: 'popular_movies'),
+            HybridNativeAdWidget(adKey: 'popular_movies',height: 150,),
             Expanded(
               child: VerticalListView(
                 itemCount: movies.length + 1,

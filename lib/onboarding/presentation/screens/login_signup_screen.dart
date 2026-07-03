@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/services/service_locator.dart';
 import '../../data/services/onboarding_storage_service.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
@@ -292,7 +293,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Native Ad
-            const NativeAdWidget(adKey: 'login_signup'),
+            const HybridNativeAdWidget(adKey: 'login_signup'),
             _fieldLabel('Phone Number'),
             _buildPhoneField(_loginPhoneController),
             const SizedBox(height: 16),

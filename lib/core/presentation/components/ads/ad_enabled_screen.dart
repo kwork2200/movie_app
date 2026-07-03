@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'banner_ad_widget.dart';
+import 'hybrid_banner_ad_widget.dart';
 import 'interstitial_ad_manager.dart';
 
 /// Wrapper widget that adds banner ads to any screen
@@ -42,7 +42,7 @@ class _AdEnabledScreenState extends State<AdEnabledScreen> {
         if (widget.showBanner)
           SafeArea(
             top: false,
-            child: const BannerAdWidget(),
+            child: const HybridBannerAdWidget(),
           ),
       ],
     );
