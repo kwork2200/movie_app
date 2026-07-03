@@ -42,7 +42,7 @@ class _AdEnabledScreenState extends State<AdEnabledScreen> {
         if (widget.showBanner)
           SafeArea(
             top: false,
-            child: const HybridBannerAdWidget(),
+            child: const HybridBannerAdWidget (),
           ),
       ],
     );

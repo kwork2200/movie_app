@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:async';
 import '../../../services/ad_service.dart';
+import '../../../services/fb_ad_service.dart';
 import '../../../services/remote_config_service.dart';
+import 'third_party_image_ad.dart';
 
 /// Reusable Banner Ad Widget with real-time Remote Config updates
+/// Falls back to third-party image ad when Google/Facebook ads are disabled
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
@@ -100,6 +103,21 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if Google/Facebook banner ads are disabled
+    final googleAdsDisabled = !AdService.instance.shouldShowBannerAds;
+    final facebookAdsDisabled = !FbAdService.instance.shouldShowBannerAds;
+    final showThirdPartyAd = RemoteConfigService.instance.showThirdPartyBannerAds;
+    print('📢 googleAdsDisabled%$googleAdsDisabled   facebookAdsDisabled $facebookAdsDisabled  showThirdPartyAd $showThirdPartyAd');
+    // If both Google and Facebook ads are disabled, show third-party image ad
+    if (googleAdsDisabled && facebookAdsDisabled && showThirdPartyAd) {
+      print('📢 Showing third-party banner image ad (Google & Facebook ads disabled)');
+      return const ThirdPartyImageAd(
+        height: 50, // Standard banner height
+        isNativeSize: false,
+        margin: EdgeInsets.zero,
+      );
+    }
+    
     // Check Remote Config flag (real-time)
     if (!_shouldShowAds) {
       return const SizedBox.shrink();

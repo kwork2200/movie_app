@@ -4,7 +4,7 @@ import 'dart:async';
 import '../../../services/fb_ad_service.dart';
 import '../../../services/remote_config_service.dart';
 
-/// Facebook Native Ad Widget using Platform View
+/// Facebook Native Ad Widget using Platform View with third-party image fallback
 class FbNativeAdWidget extends StatefulWidget {
   final double height;
   final EdgeInsets? margin;

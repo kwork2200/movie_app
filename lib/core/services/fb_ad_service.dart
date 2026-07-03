@@ -56,65 +56,65 @@ class FbAdService {
     return RemoteConfigService.instance.showFbNativeAds;
   }
 
-  // Screen-specific native ad getters
+  // Screen-specific native ad getters (with master switch check)
   bool get shouldShowNativeAdLanguageSelection {
-    return RemoteConfigService.instance.showFbNativeAdLanguageSelection;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdLanguageSelection;
   }
 
   bool get shouldShowNativeAdLoginSignup {
-    return RemoteConfigService.instance.showFbNativeAdLoginSignup;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdLoginSignup;
   }
 
   bool get shouldShowNativeAdProfileSetup {
-    return RemoteConfigService.instance.showFbNativeAdProfileSetup;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdProfileSetup;
   }
 
   bool get shouldShowNativeAdMoviesHome1 {
-    return RemoteConfigService.instance.showFbNativeAdMoviesHome1;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdMoviesHome1;
   }
 
   bool get shouldShowNativeAdMoviesHome2 {
-    return RemoteConfigService.instance.showFbNativeAdMoviesHome2;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdMoviesHome2;
   }
 
   bool get shouldShowNativeAdMoviesHome3 {
-    return RemoteConfigService.instance.showFbNativeAdMoviesHome3;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdMoviesHome3;
   }
 
   bool get shouldShowNativeAdTVShowsHome {
-    return RemoteConfigService.instance.showFbNativeAdTVShowsHome;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdTVShowsHome;
   }
 
   bool get shouldShowNativeAdSearch {
-    return RemoteConfigService.instance.showFbNativeAdSearch;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdSearch;
   }
 
   bool get shouldShowNativeAdWatchlist {
-    return RemoteConfigService.instance.showFbNativeAdWatchlist;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdWatchlist;
   }
 
   bool get shouldShowNativeAdPopularMovies {
-    return RemoteConfigService.instance.showFbNativeAdPopularMovies;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdPopularMovies;
   }
 
   bool get shouldShowNativeAdTopRatedMovies {
-    return RemoteConfigService.instance.showFbNativeAdTopRatedMovies;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdTopRatedMovies;
   }
 
   bool get shouldShowNativeAdMovieDetails {
-    return RemoteConfigService.instance.showFbNativeAdMovieDetails;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdMovieDetails;
   }
 
   bool get shouldShowNativeAdPopularTVShows {
-    return RemoteConfigService.instance.showFbNativeAdPopularTVShows;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdPopularTVShows;
   }
 
   bool get shouldShowNativeAdTopRatedTVShows {
-    return RemoteConfigService.instance.showFbNativeAdTopRatedTVShows;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdTopRatedTVShows;
   }
 
   bool get shouldShowNativeAdTVShowDetails {
-    return RemoteConfigService.instance.showFbNativeAdTVShowDetails;
+    return shouldShowNativeAds && RemoteConfigService.instance.showFbNativeAdTVShowDetails;
   }
 
   /// Check if interstitial ads should be shown (from Remote Config)

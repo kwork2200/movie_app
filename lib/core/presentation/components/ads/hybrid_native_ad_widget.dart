@@ -5,6 +5,7 @@ import '../../../services/fb_ad_service.dart';
 import '../../../services/remote_config_service.dart';
 import 'native_ad_widget.dart';
 import 'fb_native_ad_widget.dart';
+import 'third_party_image_ad.dart';
 
 /// Hybrid Native Ad Widget - Shows Facebook or Google ads based on Remote Config
 class HybridNativeAdWidget extends StatefulWidget {
@@ -153,7 +154,18 @@ class _HybridNativeAdWidgetState extends State<HybridNativeAdWidget> {
       );
     }
 
-    // No ads to show
+    // Priority 3: Show third-party image ad only if enabled in Remote Config
+    final showThirdPartyAd = RemoteConfigService.instance.showThirdPartyNativeAds;
+    if (showThirdPartyAd) {
+      return ThirdPartyImageAd(
+        height: widget.height,
+        margin: widget.margin ?? const EdgeInsets.symmetric(vertical: 8),
+        padding: widget.padding,
+        isNativeSize: true, // Native ad size with rounded corners
+      );
+    }
+
+    // If third-party ads are also disabled, show nothing
     return const SizedBox.shrink();
   }
 }

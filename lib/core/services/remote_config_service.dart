@@ -28,6 +28,11 @@ class RemoteConfigService {
     'show_fb_banner_ads': true,
     'show_fb_native_ads': true,
     
+    // Third-party image ads (fallback when Google/Facebook ads are disabled)
+    'show_third_party_banner_ads': true,
+    'show_third_party_native_ads': true,
+    'third_party_ad_url': 'http://1261.mark.qureka.com/',
+    
     // Screen-specific native ad keys (14 keys for 14 screens)
     'show_native_ad_language_selection': true,
     'show_native_ad_login_signup': true,
@@ -59,8 +64,8 @@ class RemoteConfigService {
     'show_fb_native_ad_top_rated_tv_shows': true,
     'show_fb_native_ad_tv_show_details': true,
     
-    'show_interstitial_ads': true,   // Google Ads interstitials enabled by default
-    'show_fb_interstitial_ads': true, // Facebook Ads interstitials enabled as fallback
+    'show_interstitial_ads': true,
+    'show_fb_interstitial_ads': true,
     'interstitial_ad_frequency': 3,
     'android_banner_ad_id': 'ca-app-pub-3940256099942544/6300978111',
     'android_interstitial_ad_id': 'ca-app-pub-3940256099942544/1033173712',
@@ -163,6 +168,36 @@ class RemoteConfigService {
     } catch (e) {
       print('⚠️ Error getting use_facebook_ads: $e');
       return _defaults['use_facebook_ads'] as bool;
+    }
+  }
+
+  /// Check if third-party banner ads should be shown (fallback image ads)
+  bool get showThirdPartyBannerAds {
+    try {
+      return _remoteConfig.getBool('show_third_party_banner_ads');
+    } catch (e) {
+      print('⚠️ Error getting show_third_party_banner_ads: $e');
+      return _defaults['show_third_party_banner_ads'] as bool;
+    }
+  }
+
+  /// Check if third-party native ads should be shown (fallback image ads)
+  bool get showThirdPartyNativeAds {
+    try {
+      return _remoteConfig.getBool('show_third_party_native_ads');
+    } catch (e) {
+      print('⚠️ Error getting show_third_party_native_ads: $e');
+      return _defaults['show_third_party_native_ads'] as bool;
+    }
+  }
+
+  /// Get third-party ad click URL
+  String get thirdPartyAdUrl {
+    try {
+      return _remoteConfig.getString('third_party_ad_url');
+    } catch (e) {
+      print('⚠️ Error getting third_party_ad_url: $e');
+      return _defaults['third_party_ad_url'] as String;
     }
   }
 
@@ -598,6 +633,9 @@ class RemoteConfigService {
     print('📊 Remote Config Values:');
     print('  - Show Banner Ads: $showBannerAds');
     print('  - Show Native Ads: $showNativeAds');
+    print('  - Show Third Party Banner Ads: $showThirdPartyBannerAds');
+    print('  - Show Third Party Native Ads: $showThirdPartyNativeAds');
+    print('  - Third Party Ad URL: $thirdPartyAdUrl');
     print('  - Language Selection Ad: $showNativeAdLanguageSelection');
     print('  - Login/Signup Ad: $showNativeAdLoginSignup');
     print('  - Profile Setup Ad: $showNativeAdProfileSetup');

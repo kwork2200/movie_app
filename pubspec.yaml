@@ -112,4 +112,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/icon.png
+    - assets/images/third_image_ads.jpg
     - .env
