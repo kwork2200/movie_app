@@ -435,15 +435,12 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
     }
 
     // Show Facebook Native Ad
-    if (_shouldShowFacebook) {
+    if (!_shouldShowFacebook) {
       return SizedBox(
         width: AppSize.s160,
         height: AppSize.s240,
-        child: FbNativeAdWidget(
-          height: AppSize.s70,
-          adKey: 'movie_details',
-          margin: EdgeInsets.zero,
-        ),
+        child: HybridNativeAdWidget(
+            adKey: 'movie_details', height: AppSize.s175),
       );
     }
 

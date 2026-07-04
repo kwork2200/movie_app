@@ -127,7 +127,7 @@ class InterstitialAdManager {
   }
 
   /// Show interstitial ad on screen enter (with frequency control)
-  /// Priority: 1. Google Ads (if loaded), 2. Facebook Ads (fallback), 3. Load for next time
+  /// Priority: 1. Check which network is enabled, 2. Show available ad, 3. Load for next time
   Future<void> showAdIfAvailable() async {
     // Check if ANY ad network is enabled
     if (!AdService.instance.shouldShowInterstitialAds && !FbAdService.instance.shouldShowInterstitialAds) {
@@ -141,7 +141,57 @@ class InterstitialAdManager {
       return;
     }
 
-    // Priority 1: Try Google Ads first if enabled and loaded
+    // Priority 1: If Google Ads are DISABLED, only show Facebook Ads
+    if (!AdService.instance.shouldShowInterstitialAds) {
+      if (FbAdService.instance.shouldShowInterstitialAds && _isFbAdLoaded) {
+        print('📺 Showing Facebook interstitial ad (Google ads disabled)');
+        await FbAdService.instance.showInterstitialAd();
+        _isFbAdLoaded = false;
+        _screenCounter = 0;
+        _loadFacebookAd(); // Preload next ad
+        return;
+      } else {
+        print('⚠️ Facebook ad not ready, loading...');
+        _screenCounter = 0;
+        await loadAd();
+        return;
+      }
+    }
+
+    // Priority 2: If Facebook Ads are DISABLED, only show Google Ads
+    if (!FbAdService.instance.shouldShowInterstitialAds) {
+      if (AdService.instance.shouldShowInterstitialAds && _interstitialAd != null) {
+        print('📺 Showing Google interstitial ad (Facebook ads disabled)');
+        final completer = Completer<void>();
+        _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+          onAdDismissedFullScreenContent: (ad) {
+            ad.dispose();
+            _interstitialAd = null;
+            _screenCounter = 0;
+            loadAd();
+            if (!completer.isCompleted) completer.complete();
+          },
+          onAdFailedToShowFullScreenContent: (ad, error) {
+            print('❌ Failed to show Google interstitial ad: $error');
+            ad.dispose();
+            _interstitialAd = null;
+            _screenCounter = 0;
+            loadAd();
+            if (!completer.isCompleted) completer.complete();
+          },
+        );
+        await _interstitialAd!.show();
+        await completer.future;
+        return;
+      } else {
+        print('⚠️ Google ad not ready, loading...');
+        _screenCounter = 0;
+        await loadAd();
+        return;
+      }
+    }
+
+    // Priority 3: Both networks enabled - Try Google Ads first, then Facebook fallback
     if (AdService.instance.shouldShowInterstitialAds && _interstitialAd != null) {
       print('📺 Showing Google interstitial ad');
       final completer = Completer<void>();
@@ -173,9 +223,9 @@ class InterstitialAdManager {
       return;
     }
 
-    // Priority 2: Use Facebook Ads if Google is not available
+    // Priority 4: Google not ready, try Facebook
     if (FbAdService.instance.shouldShowInterstitialAds && _isFbAdLoaded) {
-      print('📺 Showing Facebook interstitial ad (Google not available)');
+      print('📺 Showing Facebook interstitial ad (Google not loaded yet)');
       await FbAdService.instance.showInterstitialAd();
       _isFbAdLoaded = false;
       _screenCounter = 0;
@@ -183,13 +233,14 @@ class InterstitialAdManager {
       return;
     }
 
-    // Priority 3: Load ads if not ready
+    // Priority 5: Load ads if not ready
     print('⚠️ No ads ready, loading...');
+    _screenCounter = 0;
     await loadAd();
   }
 
   /// Show interstitial ad on back navigation — ALWAYS shows if ad is ready.
-  /// Priority: 1. Google Ads (if loaded), 2. Facebook Ads (fallback)
+  /// Priority: Check which network is enabled, then show available ad
   /// Waits for the ad to be fully dismissed before returning.
   Future<void> showAdOnBack() async {
     if (!AdService.instance.shouldShowInterstitialAds && !FbAdService.instance.shouldShowInterstitialAds) {
@@ -197,7 +248,52 @@ class InterstitialAdManager {
       return;
     }
 
-    // Priority 1: Try Google Ads first if available
+    // Priority 1: If Google Ads are DISABLED, only show Facebook Ads
+    if (!AdService.instance.shouldShowInterstitialAds) {
+      if (FbAdService.instance.shouldShowInterstitialAds && _isFbAdLoaded) {
+        print('📺 Showing Facebook interstitial ad on back (Google ads disabled)');
+        await FbAdService.instance.showInterstitialAd();
+        _isFbAdLoaded = false;
+        _loadFacebookAd(); // Preload for next time
+        return;
+      } else {
+        print('⚠️ Facebook ad not ready (back), loading...');
+        loadAd();
+        return;
+      }
+    }
+
+    // Priority 2: If Facebook Ads are DISABLED, only show Google Ads
+    if (!FbAdService.instance.shouldShowInterstitialAds) {
+      if (AdService.instance.shouldShowInterstitialAds && _interstitialAd != null) {
+        print('📺 Showing Google interstitial ad on back (Facebook ads disabled)');
+        final completer = Completer<void>();
+        _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+          onAdDismissedFullScreenContent: (ad) {
+            ad.dispose();
+            _interstitialAd = null;
+            loadAd(); // Preload for next screen
+            if (!completer.isCompleted) completer.complete();
+          },
+          onAdFailedToShowFullScreenContent: (ad, error) {
+            print('❌ Failed to show Google interstitial ad on back: $error');
+            ad.dispose();
+            _interstitialAd = null;
+            loadAd();
+            if (!completer.isCompleted) completer.complete();
+          },
+        );
+        await _interstitialAd!.show();
+        await completer.future;
+        return;
+      } else {
+        print('⚠️ Google ad not ready (back), loading...');
+        loadAd();
+        return;
+      }
+    }
+
+    // Priority 3: Both networks enabled - Try Google Ads first, then Facebook fallback
     if (AdService.instance.shouldShowInterstitialAds && _interstitialAd != null) {
       print('📺 Showing Google interstitial ad on back navigation');
       final completer = Completer<void>();
@@ -229,9 +325,9 @@ class InterstitialAdManager {
       return;
     }
 
-    // Priority 2: Try Facebook Ads if Google is not available
+    // Priority 4: Google not ready, try Facebook
     if (FbAdService.instance.shouldShowInterstitialAds && _isFbAdLoaded) {
-      print('📺 Showing Facebook interstitial ad on back navigation (Google not available)');
+      print('📺 Showing Facebook interstitial ad on back (Google not loaded yet)');
       await FbAdService.instance.showInterstitialAd();
       _isFbAdLoaded = false;
       _loadFacebookAd(); // Preload for next time

@@ -4,6 +4,7 @@ import 'dart:async';
 
 import '../../../core/domain/entities/media.dart';
 import '../../../core/domain/entities/media_details.dart';
+import '../../../core/presentation/components/ads/fb_native_ad_widget.dart';
 import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/details_card.dart';
 import '../../../core/presentation/components/error_screen.dart';
@@ -14,6 +15,7 @@ import '../../../core/presentation/components/section_listview_card.dart';
 import '../../../core/resources/app_strings.dart';
 import '../../../core/resources/app_values.dart';
 import '../../../core/resources/app_colors.dart';
+import '../../../core/services/fb_ad_service.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/services/remote_config_service.dart';
@@ -235,13 +237,13 @@ class TVShowDetailsWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _getSimilarSection(List<Media>? similar, List<Media> popularShows) {
     // Use similar shows if available, otherwise use popular shows
-    final showsList = (similar != null && similar.isNotEmpty) 
-        ? similar 
+    final showsList = (similar != null && similar.isNotEmpty)
+        ? similar
         : popularShows;
-    
+
     if (showsList.isNotEmpty) {
       final items = _buildItemsWithAds(showsList);
       return Column(
@@ -255,7 +257,7 @@ class TVShowDetailsWidget extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(width: AppSize.s10),
-              itemBuilder: (context, index) => items[index],
+              itemBuilder: (context, index) => Center(child: items[index]),
             ),
           ),
         ],
@@ -263,7 +265,7 @@ class TVShowDetailsWidget extends StatelessWidget {
     }
     return const SizedBox();
   }
-  
+
   Widget _getMostViewedSection(List<Media> topRatedShows) {
     if (topRatedShows.isNotEmpty) {
       final items = _buildItemsWithAds(topRatedShows);
@@ -278,7 +280,7 @@ class TVShowDetailsWidget extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(width: AppSize.s10),
-              itemBuilder: (context, index) => items[index],
+              itemBuilder: (context, index) => Center(child: items[index]),
             ),
           ),
         ],
@@ -293,7 +295,7 @@ class TVShowDetailsWidget extends StatelessWidget {
     for (int i = 0; i < mediaList.length; i++) {
       items.add(SectionListViewCard(media: mediaList[i]));
       if ((i + 1) % 2 == 0) {
-        items.add(const _InlineTVNativeAdCard());
+        items.add(const _InlineNativeAdCard());
       }
     }
     return items;
@@ -302,34 +304,45 @@ class TVShowDetailsWidget extends StatelessWidget {
 
 /// A native ad card sized to fit inside the horizontal Similar/Most Viewed rows.
 /// Width: ~160px. Height: constrained by the parent SizedBox (AppSize.s240).
-class _InlineTVNativeAdCard extends StatefulWidget {
-  const _InlineTVNativeAdCard();
+class _InlineNativeAdCard extends StatefulWidget {
+  const _InlineNativeAdCard();
 
   @override
-  State<_InlineTVNativeAdCard> createState() => _InlineTVNativeAdCardState();
+  State<_InlineNativeAdCard> createState() => _InlineNativeAdCardState();
 }
 
-class _InlineTVNativeAdCardState extends State<_InlineTVNativeAdCard> {
+class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
   NativeAd? _nativeAd;
   bool _isAdLoaded = false;
   bool _hasError = false;
   StreamSubscription? _sub;
-  bool _shouldShow = false;
+  bool _shouldShowGoogle = false;
+  bool _shouldShowFacebook = false;
+  bool _useGoogleAds = true;
 
   @override
   void initState() {
     super.initState();
-    _shouldShow = AdService.instance.shouldShowNativeAdTVShowDetails;
-    if (_shouldShow) _load();
+    _updateAdSettings();
+    if (_shouldShowGoogle || _shouldShowFacebook) _load();
 
     _sub = RemoteConfigService.instance.configUpdates.listen((_) {
       if (!mounted) return;
-      final newVal = AdService.instance.shouldShowNativeAdTVShowDetails;
-      if (newVal != _shouldShow) {
-        setState(() => _shouldShow = newVal);
-        if (newVal && !_isAdLoaded && !_hasError) {
+      final oldShowGoogle = _shouldShowGoogle;
+      final oldShowFacebook = _shouldShowFacebook;
+      final oldUseGoogle = _useGoogleAds;
+
+      _updateAdSettings();
+
+      if (oldShowGoogle != _shouldShowGoogle ||
+          oldShowFacebook != _shouldShowFacebook ||
+          oldUseGoogle != _useGoogleAds) {
+        setState(() {});
+
+        // Reload ad if needed
+        if ((_shouldShowGoogle || _shouldShowFacebook) && !_isAdLoaded && !_hasError) {
           _load();
-        } else if (!newVal) {
+        } else if (!_shouldShowGoogle && !_shouldShowFacebook) {
           _nativeAd?.dispose();
           _nativeAd = null;
           setState(() => _isAdLoaded = false);
@@ -338,17 +351,27 @@ class _InlineTVNativeAdCardState extends State<_InlineTVNativeAdCard> {
     });
   }
 
+  void _updateAdSettings() {
+    final useFacebookAds = RemoteConfigService.instance.useFacebookAds;
+    _useGoogleAds = !useFacebookAds;
+    _shouldShowGoogle = false; // Disable Google ads
+    _shouldShowFacebook = useFacebookAds && !FbAdService.instance.shouldShowNativeAdTVShowDetails;
+  }
+
   void _load() {
-    _nativeAd = AdService.instance.createNativeAd(
-      onAdLoaded: (ad) {
-        if (mounted) setState(() => _isAdLoaded = true);
-      },
-      onAdFailedToLoad: (ad, error) {
-        ad.dispose();
-        if (mounted) setState(() => _hasError = true);
-      },
-    );
-    _nativeAd?.load();
+    if (_shouldShowGoogle && _useGoogleAds) {
+      _nativeAd = AdService.instance.createNativeAd(
+        factoryId: 'smallNativeAd',
+        onAdLoaded: (ad) {
+          if (mounted) setState(() => _isAdLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (mounted) setState(() => _hasError = true);
+        },
+      );
+      _nativeAd?.load();
+    }
   }
 
   @override
@@ -360,23 +383,30 @@ class _InlineTVNativeAdCardState extends State<_InlineTVNativeAdCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_shouldShow || _hasError || !_isAdLoaded || _nativeAd == null) {
-      return const SizedBox.shrink();
-    }
-
-    return SizedBox(
-      width: AppSize.s160,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(AppSize.s8),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppSize.s8),
+    if (_shouldShowGoogle && !_hasError && _isAdLoaded && _nativeAd != null) {
+      return SizedBox(
+        width: AppSize.s160,
+        height: AppSize.s70,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(AppSize.s8),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
           child: AdWidget(ad: _nativeAd!),
         ),
-      ),
-    );
+      );
+    }
+
+    // Show Facebook Native Ad
+    if (!_shouldShowFacebook) {
+      return SizedBox(
+        width: AppSize.s160,
+        height: AppSize.s240,
+        child: HybridNativeAdWidget(
+            adKey: 'tv_show_details', height: AppSize.s175),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
