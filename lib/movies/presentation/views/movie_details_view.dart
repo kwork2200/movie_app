@@ -31,6 +31,7 @@ import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
 import '../../../core/presentation/components/ads/native_ad_widget.dart';
 import '../../../core/presentation/components/ads/interstitial_ad_manager.dart';
 import '../../../core/presentation/components/ads/fb_native_ad_widget.dart';
+import '../../../core/presentation/components/ads/list_tile_native_ad.dart';
 import '../../../core/services/fb_ad_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -348,19 +349,15 @@ class _InlineNativeAdCard extends StatefulWidget {
 }
 
 class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
-  NativeAd? _nativeAd;
-  bool _isAdLoaded = false;
-  bool _hasError = false;
-  StreamSubscription? _sub;
   bool _shouldShowGoogle = false;
   bool _shouldShowFacebook = false;
   bool _useGoogleAds = true;
+  StreamSubscription? _sub;
 
   @override
   void initState() {
     super.initState();
     _updateAdSettings();
-    if (_shouldShowGoogle || _shouldShowFacebook) _load();
 
     _sub = RemoteConfigService.instance.configUpdates.listen((_) {
       if (!mounted) return;
@@ -374,15 +371,6 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
           oldShowFacebook != _shouldShowFacebook ||
           oldUseGoogle != _useGoogleAds) {
         setState(() {});
-        
-        // Reload ad if needed
-        if ((_shouldShowGoogle || _shouldShowFacebook) && !_isAdLoaded && !_hasError) {
-          _load();
-        } else if (!_shouldShowGoogle && !_shouldShowFacebook) {
-          _nativeAd?.dispose();
-          _nativeAd = null;
-          setState(() => _isAdLoaded = false);
-        }
       }
     });
   }
@@ -394,56 +382,50 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
     _shouldShowFacebook = useFacebookAds && FbAdService.instance.shouldShowNativeAdMovieDetails;
   }
 
-  void _load() {
-    if (_shouldShowGoogle && _useGoogleAds) {
-      _nativeAd = AdService.instance.createNativeAd(
-        factoryId: 'smallNativeAd',
-        onAdLoaded: (ad) {
-          if (mounted) setState(() => _isAdLoaded = true);
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          if (mounted) setState(() => _hasError = true);
-        },
-      );
-      _nativeAd?.load();
-    }
-  }
-
   @override
   void dispose() {
     _sub?.cancel();
-    _nativeAd?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_shouldShowGoogle && !_hasError && _isAdLoaded && _nativeAd != null) {
-      return SizedBox(
+    if (_shouldShowGoogle) {
+      return Container(
         width: AppSize.s160,
-        height: AppSize.s70,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(AppSize.s8),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+        height: AppSize.s240,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSize.s8),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSize.s8),
+          child: const ListTileNativeAd(
+            height: 240,
+            width: 160,
           ),
-          child: AdWidget(ad: _nativeAd!),
         ),
       );
     }
 
-    // Show Facebook Native Ad
-    if (!_shouldShowFacebook) {
-      return SizedBox(
+    if (_shouldShowFacebook) {
+      return Container(
         width: AppSize.s160,
         height: AppSize.s240,
-        child: HybridNativeAdWidget(
-            adKey: 'movie_details', height: AppSize.s175),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSize.s8),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSize.s8),
+          child: const HybridNativeAdWidget(
+            adKey: 'movie_details',
+            height: AppSize.s240,
+            // width: AppSize.s160,
+          ),
+        ),
       );
     }
-
     return const SizedBox.shrink();
   }
 }

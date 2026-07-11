@@ -61,7 +61,7 @@ class MainActivity : FlutterActivity() {
         GoogleMobileAdsPlugin.registerNativeAdFactory(
             flutterEngine,
             "listTile",
-            LargeNativeAdFactory(layoutInflater)
+            ListTileNativeAdFactory(this)
         )
         
         // Register Facebook Banner Ad Platform View
@@ -387,6 +387,70 @@ class FbNativeAdView(private val context: Context, placementId: String) : Platfo
     override fun dispose() {
         nativeAd.unregisterView()
         nativeAd.destroy()
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ListTile native ad factory (customizable media + icon + headline + body + CTA)
+// ─────────────────────────────────────────────────────────────────
+class ListTileNativeAdFactory(private val context: Context) :
+    GoogleMobileAdsPlugin.NativeAdFactory {
+
+    override fun createNativeAd(
+        nativeAd: NativeAd,
+        customOptions: MutableMap<String, Any>?
+    ): NativeAdView {
+        val nativeAdView = LayoutInflater.from(context).inflate(
+            R.layout.list_tile_native_ad,
+            null
+        ) as NativeAdView
+
+        val attributionViewSmall = nativeAdView.findViewById<TextView>(R.id.native_ad_attribution_small)
+        val iconView = nativeAdView.findViewById<ImageView>(R.id.native_ad_icon)
+        val mediaView = nativeAdView.findViewById<MediaView>(R.id.native_ad_media)
+        val headlineView = nativeAdView.findViewById<TextView>(R.id.native_ad_headline)
+        val bodyView = nativeAdView.findViewById<TextView>(R.id.native_ad_body)
+        val callToActionButton = nativeAdView.findViewById<Button>(R.id.native_ad_btn)
+
+        // Handle icon
+        val icon = nativeAd.icon
+        if (icon != null) {
+            attributionViewSmall.visibility = View.VISIBLE
+            iconView.setImageDrawable(icon.drawable)
+        } else {
+            attributionViewSmall.visibility = View.INVISIBLE
+        }
+        nativeAdView.iconView = iconView
+
+        // Handle media
+        if (nativeAd.mediaContent != null) {
+            mediaView.setMediaContent(nativeAd.mediaContent)
+            mediaView.visibility = View.VISIBLE
+            nativeAdView.mediaView = mediaView
+        } else {
+            mediaView.visibility = View.GONE
+        }
+
+        // Handle headline
+        headlineView.text = nativeAd.headline
+        nativeAdView.headlineView = headlineView
+
+        // Handle body
+        bodyView.text = nativeAd.body
+        bodyView.visibility = if (nativeAd.body != null) View.VISIBLE else View.INVISIBLE
+        nativeAdView.bodyView = bodyView
+
+        // Handle call to action
+        if (nativeAd.callToAction == null) {
+            callToActionButton.visibility = View.INVISIBLE
+        } else {
+            callToActionButton.visibility = View.VISIBLE
+            callToActionButton.text = nativeAd.callToAction
+        }
+        nativeAdView.callToActionView = callToActionButton
+
+        nativeAdView.setNativeAd(nativeAd)
+        return nativeAdView
     }
 }
 
