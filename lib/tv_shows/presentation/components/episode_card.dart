@@ -15,6 +15,20 @@ class EpisodeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (episode == null) {
+      return const SizedBox(
+        height: 110,
+        child: Center(
+          child: Text(
+            'No episode available',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      );
+    }
+
+
+
     final textTheme = Theme.of(context).textTheme;
     return Container(
       height: AppSize.s110,

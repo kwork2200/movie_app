@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../onboarding/presentation/screens/splash_screen.dart';
 import '../../onboarding/presentation/screens/language_selection_screen.dart';
 import '../../movies/presentation/views/movie_details_view.dart';
+import '../../movies/presentation/views/person_details_view.dart';
 import '../presentation/screens/info_screen.dart';
 import '../../movies/presentation/views/movies_view.dart';
 import '../../movies/presentation/views/popular_movies_view.dart';
@@ -27,6 +28,7 @@ const String moviesPath = '/movies';
 const String movieDetailsPath = 'movieDetails/:movieId';
 const String popularMoviesPath = 'popularMovies';
 const String topRatedMoviesPath = 'topRatedMovies';
+const String personDetailsPath = 'personDetails/:personId';
 const String tvShowsPath = '/tvShows';
 const String tvShowDetailsPath = 'tvShowDetails/:tvShowId';
 const String popularTVShowsPath = 'popularTVShows';
@@ -91,6 +93,15 @@ class AppRouter {
                 path: topRatedMoviesPath,
                 pageBuilder: (context, state) =>
                     const CupertinoPage(child: TopRatedMoviesView()),
+              ),
+              GoRoute(
+                name: AppRoutes.personDetailsRoute,
+                path: personDetailsPath,
+                pageBuilder: (context, state) => CupertinoPage(
+                  child: PersonDetailsView(
+                    personId: int.parse(state.pathParameters['personId']!),
+                  ),
+                ),
               ),
             ],
           ),

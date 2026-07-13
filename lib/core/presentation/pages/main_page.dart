@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../resources/app_router.dart';
 import '../../resources/app_routes.dart';
 import '../../resources/app_strings.dart';
 import '../../resources/app_values.dart';
+import '../components/ads/hybrid_native_ad_widget.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key, required this.child});
@@ -18,13 +20,61 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
+    final String location = GoRouterState.of(context).uri.path;
+    final bool isOnRoot = location.startsWith(moviesPath);
     return Scaffold(
       body: PopScope(
-        canPop: true,
-        onPopInvokedWithResult: (didPop, result) {
-          final String location = GoRouterState.of(context).uri.path;
-          if (!location.startsWith(moviesPath)) {
-            _onItemTapped(0, context);
+        canPop: !isOnRoot,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+
+          final bool? shouldExit = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              backgroundColor: Colors.black,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSize.s12),
+              ),
+              title: const Text(
+                'Exit App',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Are you sure you want to exit?',
+                      style: TextStyle(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSize.s12),
+                    const HybridNativeAdWidget(
+                      height: AppSize.s175,
+                      adKey: 'movies_home_1',
+                    ),
+                  ],
+                ),
+              ),
+              actionsAlignment: MainAxisAlignment.spaceEvenly,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Exit', style: TextStyle(color: Colors.redAccent)),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldExit == true) {
+            SystemNavigator.pop();
           }
         },
         child: widget.child,
@@ -32,13 +82,13 @@ class _MainPageState extends State<MainPage> {
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
           canvasColor: Colors.black,
-          splashColor: Colors.transparent,        // ← ripple remove
-          highlightColor: Colors.transparent,     // ← highlight remove
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
         ),
         child: BottomNavigationBar(
           backgroundColor: Colors.black,
-          selectedItemColor: const Color(0xFFE8B84B),    // ← gold color (tumhara _gold)
-          unselectedItemColor: const Color(0xFF8892AA),  // ← muted color
+          selectedItemColor: const Color(0xFFE8B84B),
+          unselectedItemColor: const Color(0xFF8892AA),
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 11,
@@ -49,13 +99,13 @@ class _MainPageState extends State<MainPage> {
           ),
           showSelectedLabels: true,
           showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,    // ← animation band karta hai
-          enableFeedback: false,                  // ← haptic/sound feedback off
+          type: BottomNavigationBarType.fixed,
+          enableFeedback: false,
           items: const [
             BottomNavigationBarItem(
               label: AppStrings.movies,
               icon: Icon(Icons.movie_creation_outlined, size: AppSize.s20),
-              activeIcon: Icon(Icons.movie_creation_rounded, size: AppSize.s20),  // ← selected icon
+              activeIcon: Icon(Icons.movie_creation_rounded, size: AppSize.s20),
             ),
             BottomNavigationBarItem(
               label: AppStrings.shows,

@@ -12,13 +12,13 @@ import '../../../core/presentation/components/section_header.dart';
 import '../../../core/presentation/components/section_listview.dart';
 import '../../../core/presentation/components/section_listview_card.dart';
 import '../../../core/presentation/components/slider_card.dart';
+import '../../../core/resources/app_colors.dart';
 import '../../../core/resources/app_routes.dart';
 import '../../../core/resources/app_strings.dart';
 import '../../../core/resources/app_values.dart';
 import '../../../core/utils/enums.dart';
 import '../controllers/tv_shows_bloc/tv_shows_bloc.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
-import '../../../core/presentation/components/ads/native_ad_widget.dart';
 
 class TVShowsView extends StatelessWidget {
   const TVShowsView({super.key});
@@ -66,11 +66,29 @@ class TVShowsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if all lists are empty
+    if (onAirTvShows.isEmpty && popularTvShows.isEmpty && topRatedTvShows.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppPadding.p16),
+          child: Text(
+            'No TV shows available at the moment',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.secondaryText,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
           CustomSlider(
+            items: onAirTvShows,
             itemBuilder: (context, itemIndex, _) {
               return SliderCard(
                 media: onAirTvShows[itemIndex],

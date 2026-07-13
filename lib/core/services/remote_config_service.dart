@@ -12,28 +12,28 @@ class RemoteConfigService {
   late FirebaseRemoteConfig _remoteConfig;
   bool _isInitialized = false;
   
-  // Stream controller to notify listeners about config changes
   final _configUpdateController = StreamController<void>.broadcast();
   
   /// Stream that emits whenever Remote Config is updated
   Stream<void> get configUpdates => _configUpdateController.stream;
 
-  // Default values
   static const Map<String, dynamic> _defaults = {
-    // Ad visibility toggles
     'show_banner_ads': true,
     'show_native_ads': true,
     
-    'use_facebook_ads': false,  // false = Use Google Ads first
+    'use_facebook_ads': false,
     'show_fb_banner_ads': true,
     'show_fb_native_ads': true,
     
-    // Third-party image ads (fallback when Google/Facebook ads are disabled)
     'show_third_party_banner_ads': true,
     'show_third_party_native_ads': true,
     'third_party_ad_url': 'http://1261.mark.qureka.com/',
     
-    // Screen-specific native ad keys (14 keys for 14 screens)
+    'show_third_party_interstitial_ads': true,
+    'third_party_interstitial_ad_url_1': 'http://1261.mark.qureka.com/',
+    'third_party_interstitial_ad_url_2': 'http://1261.mark.qureka.com/',
+    'third_party_interstitial_ad_url_3': 'http://1261.mark.qureka.com/',
+    
     'show_native_ad_language_selection': true,
     'show_native_ad_login_signup': true,
     'show_native_ad_profile_setup': true,
@@ -94,19 +94,12 @@ class RemoteConfigService {
       await _remoteConfig.fetchAndActivate();
       
       _remoteConfig.onConfigUpdated.listen((event) async {
-        print('🔄 Firebase Remote Config updated in real-time!');
         await _remoteConfig.activate();
-        _logCurrentValues();
-        
+
         _configUpdateController.add(null);
       }, onError: (error) {
-        print('⚠️ Config update listener error: $error');
       });
-
       _isInitialized = true;
-      print('✅ Remote Config initialized successfully');
-      _logCurrentValues();
-      
       _startPeriodicFetch();
     } catch (e) {
       print('❌ Remote Config initialization failed: $e');
@@ -117,14 +110,12 @@ class RemoteConfigService {
   /// Start periodic fetching to detect changes quickly
   Timer? _fetchTimer;
   void _startPeriodicFetch() {
-    // Fetch every 30 seconds to check for updates (backup mechanism)
     _fetchTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       try {
         print('🔄 Checking for Remote Config updates...');
         final updated = await _remoteConfig.fetchAndActivate();
         if (updated) {
           print('✅ Remote Config updated via periodic fetch');
-          _logCurrentValues();
           _configUpdateController.add(null);
         } else {
           print('ℹ️ Remote Config already up-to-date');
@@ -142,7 +133,6 @@ class RemoteConfigService {
       final updated = await _remoteConfig.fetchAndActivate();
       if (updated) {
         print('✅ Remote Config fetched and activated');
-        _logCurrentValues();
         _configUpdateController.add(null);
         return true;
       } else {
@@ -198,6 +188,26 @@ class RemoteConfigService {
     } catch (e) {
       print('⚠️ Error getting third_party_ad_url: $e');
       return _defaults['third_party_ad_url'] as String;
+    }
+  }
+
+  /// Check if third-party interstitial ads should be shown
+  bool get showThirdPartyInterstitialAds {
+    try {
+      return _remoteConfig.getBool('show_third_party_interstitial_ads');
+    } catch (e) {
+      print('⚠️ Error getting show_third_party_interstitial_ads: $e');
+      return _defaults['show_third_party_interstitial_ads'] as bool;
+    }
+  }
+
+  /// Get third-party interstitial ad URL 1 (Qureka)
+  String get thirdPartyInterstitialAdUrl1 {
+    try {
+      return _remoteConfig.getString('third_party_interstitial_ad_url_1');
+    } catch (e) {
+      print('⚠️ Error getting third_party_interstitial_ad_url_1: $e');
+      return _defaults['third_party_interstitial_ad_url_1'] as String;
     }
   }
 
@@ -627,33 +637,6 @@ class RemoteConfigService {
     throw UnsupportedError('Unsupported platform');
   }
 
-  // ==================== Debug ====================
-
-  void _logCurrentValues() {
-    print('📊 Remote Config Values:');
-    print('  - Show Banner Ads: $showBannerAds');
-    print('  - Show Native Ads: $showNativeAds');
-    print('  - Show Third Party Banner Ads: $showThirdPartyBannerAds');
-    print('  - Show Third Party Native Ads: $showThirdPartyNativeAds');
-    print('  - Third Party Ad URL: $thirdPartyAdUrl');
-    print('  - Language Selection Ad: $showNativeAdLanguageSelection');
-    print('  - Login/Signup Ad: $showNativeAdLoginSignup');
-    print('  - Profile Setup Ad: $showNativeAdProfileSetup');
-    print('  - Movies Home Ad 1: $showNativeAdMoviesHome1');
-    // print('  - Movies Home Ad 2: $showNativeAdMoviesHome2');
-    // print('  - Movies Home Ad 3: $showNativeAdMoviesHome3');
-    print('  - TV Shows Home Ad: $showNativeAdTVShowsHome');
-    print('  - Search Ad: $showNativeAdSearch');
-    print('  - Watchlist Ad: $showNativeAdWatchlist');
-    print('  - Popular Movies Ad: $showNativeAdPopularMovies');
-    print('  - Top Rated Movies Ad: $showNativeAdTopRatedMovies');
-    print('  - Movie Details Ad: $showNativeAdMovieDetails');
-    print('  - Popular TV Shows Ad: $showNativeAdPopularTVShows');
-    print('  - Top Rated TV Shows Ad: $showNativeAdTopRatedTVShows');
-    print('  - TV Show Details Ad: $showNativeAdTVShowDetails');
-    print('  - Show Interstitial Ads: $showInterstitialAds');
-    print('  - Interstitial Ad Frequency: $interstitialAdFrequency');
-  }
 
   /// Get all config values (useful for debugging)
   Map<String, dynamic> getAllValues() {

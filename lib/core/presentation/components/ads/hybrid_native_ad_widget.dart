@@ -7,12 +7,11 @@ import 'native_ad_widget.dart';
 import 'fb_native_ad_widget.dart';
 import 'third_party_image_ad.dart';
 
-/// Hybrid Native Ad Widget - Shows Facebook or Google ads based on Remote Config
 class HybridNativeAdWidget extends StatefulWidget {
   final double height;
   final EdgeInsets? margin;
   final EdgeInsets? padding;
-  final String? adKey; // Screen-specific key
+  final String? adKey;
 
   const HybridNativeAdWidget({
     super.key,
@@ -36,8 +35,6 @@ class _HybridNativeAdWidgetState extends State<HybridNativeAdWidget> {
   void initState() {
     super.initState();
     _updateAdPreferences();
-
-    // Listen to Remote Config changes
     _configSubscription = RemoteConfigService.instance.configUpdates.listen((_) {
       _updateAdPreferences();
     });
@@ -144,7 +141,6 @@ class _HybridNativeAdWidgetState extends State<HybridNativeAdWidget> {
       );
     }
 
-    // Priority 2: Use Facebook Ads if Google is disabled but Facebook is enabled
     if (_showFacebookAds) {
       return FbNativeAdWidget(
         height: widget.height,
@@ -154,18 +150,15 @@ class _HybridNativeAdWidgetState extends State<HybridNativeAdWidget> {
       );
     }
 
-    // Priority 3: Show third-party image ad only if enabled in Remote Config
     final showThirdPartyAd = RemoteConfigService.instance.showThirdPartyNativeAds;
     if (showThirdPartyAd) {
       return ThirdPartyImageAd(
         height: widget.height,
         margin: widget.margin ?? const EdgeInsets.symmetric(vertical: 8),
         padding: widget.padding,
-        isNativeSize: true, // Native ad size with rounded corners
+        isNativeSize: true,
       );
     }
-
-    // If third-party ads are also disabled, show nothing
     return const SizedBox.shrink();
   }
 }

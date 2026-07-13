@@ -17,4 +17,5 @@ class AppColors {
   static const ratingIconColor = Color(0xffffbe21);
   static const circleDotColor = Color(0x33ffffff);
   static const iconContainerColor = Color(0xB2272830);
+  static const iconColor = Color(0xffa9aaac);
 }

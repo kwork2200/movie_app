@@ -4,13 +4,11 @@ import 'dart:async';
 
 import '../../../core/domain/entities/media.dart';
 import '../../../core/domain/entities/media_details.dart';
-import '../../../core/presentation/components/ads/fb_native_ad_widget.dart';
 import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
 import '../../../core/presentation/components/details_card.dart';
 import '../../../core/presentation/components/error_screen.dart';
 import '../../../core/presentation/components/loading_indicator.dart';
 import '../../../core/presentation/components/section_title.dart';
-import '../../../core/presentation/components/section_listview.dart';
 import '../../../core/presentation/components/section_listview_card.dart';
 import '../../../core/resources/app_strings.dart';
 import '../../../core/resources/app_values.dart';
@@ -21,6 +19,7 @@ import '../../../core/services/ad_service.dart';
 import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/enums.dart';
 import '../../../core/utils/functions.dart';
+import '../../../movies/presentation/components/trailer_widget.dart';
 import '../../../watchlist/presentation/controllers/watchlist_bloc/watchlist_bloc.dart';
 import '../components/episode_card.dart';
 import '../components/seasons_section.dart';
@@ -47,12 +46,11 @@ class _TVShowDetailsViewState extends State<TVShowDetailsView> {
   @override
   void initState() {
     super.initState();
-    // Preload ad so it's ready when user taps back
     InterstitialAdManager.instance.loadAd();
   }
 
   Future<void> _handleBack(BuildContext context) async {
-    await InterstitialAdManager.instance.showAdOnBack();
+    await showManagedInterstitialAd(context, alwaysShow: true);
     if (context.mounted) Navigator.of(context).pop();
   }
 
@@ -220,7 +218,7 @@ class TVShowDetailsWidget extends StatelessWidget {
             ),
           ),
           getOverviewSection(tvShowDetails.overview),
-          // Native Ad after overview (TV Show Details) k
+          TrailerWidget(trailerUrl: tvShowDetails.trailerUrl),
           HybridNativeAdWidget(adKey: 'tv_show_details',height: AppSize.s175),
           const SectionTitle(title: AppStrings.lastEpisodeOnAir),
           EpisodeCard(episode: tvShowDetails.lastEpisodeToAir!),

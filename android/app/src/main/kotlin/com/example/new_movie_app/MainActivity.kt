@@ -34,6 +34,7 @@ class MainActivity : FlutterActivity() {
     private var fbInterstitialAd: InterstitialAd? = null
     private var fbBannerAd: AdView? = null
     private var fbNativeAd: FbNativeAd? = null
+    private var methodChannel: MethodChannel? = null
     
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -77,7 +78,8 @@ class MainActivity : FlutterActivity() {
         )
         
         // Facebook Ads Platform Channel
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        methodChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "loadFbInterstitial" -> {
                     val placementId = call.argument<String>("placementId") ?: ""
@@ -124,16 +126,28 @@ class MainActivity : FlutterActivity() {
         fbInterstitialAd?.loadAd(
             fbInterstitialAd?.buildLoadAdConfig()
                 ?.withAdListener(object : InterstitialAdListener {
-                    override fun onInterstitialDisplayed(ad: FbAd) {}
-                    override fun onInterstitialDismissed(ad: FbAd) {}
+                    override fun onInterstitialDisplayed(ad: FbAd) {
+                        android.util.Log.i("FbInterstitialAd", "✅ Interstitial displayed")
+                    }
+                    override fun onInterstitialDismissed(ad: FbAd) {
+                        android.util.Log.i("FbInterstitialAd", "✅ Interstitial dismissed")
+                        // Notify Flutter that ad was dismissed
+                        methodChannel?.invokeMethod("onInterstitialDismissed", null)
+                    }
                     override fun onError(ad: FbAd, error: AdError) {
+                        android.util.Log.e("FbInterstitialAd", "❌ Error: ${error.errorMessage}")
                         result.error("FB_AD_ERROR", error.errorMessage, null)
                     }
                     override fun onAdLoaded(ad: FbAd) {
+                        android.util.Log.i("FbInterstitialAd", "✅ Ad loaded")
                         result.success(true)
                     }
-                    override fun onAdClicked(ad: FbAd) {}
-                    override fun onLoggingImpression(ad: FbAd) {}
+                    override fun onAdClicked(ad: FbAd) {
+                        android.util.Log.i("FbInterstitialAd", "👆 Ad clicked")
+                    }
+                    override fun onLoggingImpression(ad: FbAd) {
+                        android.util.Log.i("FbInterstitialAd", "📊 Logging impression")
+                    }
                 })
                 ?.build()
         )

@@ -25,15 +25,13 @@ import '../../domain/entities/review.dart';
 import '../components/cast_card.dart';
 import '../components/movie_card_details.dart';
 import '../components/review_card.dart';
+import '../components/trailer_widget.dart';
 import '../controllers/movie_details_bloc/movie_details_bloc.dart';
 import '../controllers/movies_bloc/movies_bloc.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
-import '../../../core/presentation/components/ads/native_ad_widget.dart';
 import '../../../core/presentation/components/ads/interstitial_ad_manager.dart';
-import '../../../core/presentation/components/ads/fb_native_ad_widget.dart';
 import '../../../core/presentation/components/ads/list_tile_native_ad.dart';
 import '../../../core/services/fb_ad_service.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class MovieDetailsView extends StatefulWidget {
   final int movieId;
@@ -55,7 +53,7 @@ class _MovieDetailsViewState extends State<MovieDetailsView> {
   }
 
   Future<void> _handleBack(BuildContext context) async {
-    await InterstitialAdManager.instance.showAdOnBack();
+    await showManagedInterstitialAd(context, alwaysShow: true);
     if (context.mounted) Navigator.of(context).pop();
   }
 
@@ -199,7 +197,6 @@ class MovieDetailsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Access the movies bloc from parent context
     final moviesBloc = context.read<MoviesBloc>();
     final popularMovies = moviesBloc.state.status == RequestStatus.loaded 
         ? moviesBloc.state.movies[1] 
@@ -218,7 +215,7 @@ class MovieDetailsWidget extends StatelessWidget {
             detailsWidget: MovieCardDetails(movieDetails: movieDetails),
           ),
           getOverviewSection(movieDetails.overview),
-          // Native Ad after overview (Movie Details)
+          TrailerWidget(trailerUrl: movieDetails.trailerUrl),
           HybridNativeAdWidget(adKey: 'movie_details',height: 160),
           _getCast(movieDetails.cast),
           _getReviews(movieDetails.reviews),
@@ -231,13 +228,11 @@ class MovieDetailsWidget extends StatelessWidget {
   }
 
   Widget _getSimilarSection(List<Media>? similar, List<Media> popularMovies) {
-    // Use similar movies if available, otherwise use popular movies
-    final moviesList = (similar != null && similar.isNotEmpty) 
+    final moviesList = (similar != null && similar.isNotEmpty)
         ? similar 
         : popularMovies;
     
     if (moviesList.isNotEmpty) {
-      // Build items list with a native ad placeholder after every 2 cards
       final items = _buildItemsWithAds(moviesList);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +283,6 @@ class MovieDetailsWidget extends StatelessWidget {
     final List<Widget> items = [];
     for (int i = 0; i < mediaList.length; i++) {
       items.add(SectionListViewCard(media: mediaList[i]));
-      // Insert ad after every 2nd card (index 1, 3, 5 …)
       if ((i + 1) % 2 == 0) {
         items.add(const _InlineNativeAdCard());
       }
@@ -421,7 +415,6 @@ class _InlineNativeAdCardState extends State<_InlineNativeAdCard> {
           child: const HybridNativeAdWidget(
             adKey: 'movie_details',
             height: AppSize.s240,
-            // width: AppSize.s160,
           ),
         ),
       );

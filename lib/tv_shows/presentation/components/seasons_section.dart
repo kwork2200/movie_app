@@ -16,6 +16,18 @@ class SeasonsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (seasons.isEmpty) {
+      return const SizedBox(
+        height: 120,
+        child: Center(
+          child: Text(
+            'No seasons available',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       height: AppSize.s280,
       child: ListView.separated(

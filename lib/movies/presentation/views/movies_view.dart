@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,19 +17,70 @@ import '../../../core/presentation/components/slider_card.dart';
 import '../../../core/resources/app_routes.dart';
 import '../../../core/resources/app_strings.dart';
 import '../../../core/resources/app_values.dart';
+import '../../../core/resources/app_colors.dart';
 import '../../../core/utils/enums.dart';
 import '../controllers/movies_bloc/movies_bloc.dart';
 import '../controllers/movies_bloc/movies_event.dart';
 import '../controllers/movies_bloc/movies_state.dart';
 import '../../../core/presentation/components/ads/ad_enabled_screen.dart';
 import '../../../core/presentation/components/ads/hybrid_native_ad_widget.dart';
+import '../../../core/presentation/components/app_drawer.dart';
 
-class MoviesView extends StatelessWidget {
+class MoviesView extends StatefulWidget {
   const MoviesView({super.key});
+
+  @override
+  State<MoviesView> createState() => _MoviesViewState();
+}
+
+class _MoviesViewState extends State<MoviesView> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      extendBodyBehindAppBar: true,
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(
+            top: AppPadding.p12,
+            left: AppPadding.p16,
+          ),
+          child: InkWell(
+            onTap: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
+            child: ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  padding: const EdgeInsets.all(AppPadding.p8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withOpacity(0.25),
+                  ),
+                  child: const Icon(
+                    Icons.menu_rounded,
+                    color: AppColors.secondaryText,
+                    size: AppSize.s20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: AdEnabledScreen(
         child: BlocBuilder<MoviesBloc, MoviesState>(
           builder: (context, state) {
@@ -65,19 +119,35 @@ class MoviesWidget extends StatelessWidget {
     required this.topRatedMovies,
   });
 
-  // Reuse the same data for additional sections (you can modify API to get different data)
   List<Media> get trendingMovies => popularMovies;
   List<Media> get upcomingMovies => nowPlayingMovies;
   List<Media> get actionMovies => topRatedMovies;
 
   @override
   Widget build(BuildContext context) {
+    if (nowPlayingMovies.isEmpty && popularMovies.isEmpty && topRatedMovies.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppPadding.p16),
+          child: Text(
+            'No movies available at the moment',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.secondaryText,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CustomSlider(
+            items: nowPlayingMovies,
             itemBuilder: (context, itemIndex, _) {
               return SliderCard(
                 media: nowPlayingMovies[itemIndex],
@@ -85,7 +155,6 @@ class MoviesWidget extends StatelessWidget {
               );
             },
           ),
-          // Native Ad after slider (Movies Home position 1)
           HybridNativeAdWidget(height: AppSize.s175, adKey: 'movies_home_1'),
           SectionHeader(
             title: AppStrings.popularMovies,

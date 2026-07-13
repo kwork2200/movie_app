@@ -95,11 +95,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
 
     if (!mounted) return;
     setState(() => _isLoading = false);
-    _showSnackBar('Welcome to Cineplex! 🎬');
     context.go('/movies');
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return; // Safety check
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -113,7 +114,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
             Text(message, style: GoogleFonts.dmSans(color: Colors.white)),
           ],
         ),
-        backgroundColor: isError ? const Color(0xFF991B1B) : const Color(0xFF15803D),
+        backgroundColor: isError ? const Color(0xFF991B1B) : const Color(
+            0xFF15803D),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -128,7 +130,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
       body: AdEnabledScreen(
         child: Stack(
           children: [
-            // Background glows
             Positioned(
               top: -50,
               left: -50,
@@ -171,8 +172,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                   _buildHero(),
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-                      itemCount: _languages.length,
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                        itemCount: _languages.length,
                         itemBuilder: (context, index) {
                           return Column(
                             children: [
@@ -286,7 +287,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
         children: [
           Row(
             children: [
-
               Container(
                 width: 56,
                 height: 56,
@@ -341,7 +341,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           color: isSelected ? _gold.withOpacity(0.07) : _card,
@@ -352,14 +352,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
         ),
         child: Row(
           children: [
-            // Flag
             Text(
               language['flag']!,
               style: const TextStyle(fontSize: 26),
             ),
             const SizedBox(width: 14),
-
-            // Names
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,8 +379,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                 ],
               ),
             ),
-
-            // Check indicator
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 24,
@@ -431,7 +426,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
                   style: GoogleFonts.dmSans(color: _muted, fontSize: 13),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 0),
                   decoration: BoxDecoration(
                     color: _gold.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -453,7 +449,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen>
             ),
             const SizedBox(height: 8),
           ],
-
           GestureDetector(
             onTap: _isLoading ? null : _handleGetStarted,
             child: AnimatedContainer(

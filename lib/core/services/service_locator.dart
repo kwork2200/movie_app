@@ -8,14 +8,19 @@ import 'fb_ad_service.dart';
 import 'network_service.dart';
 import '../presentation/components/ads/interstitial_ad_manager.dart';
 import '../../movies/data/datasource/movies_remote_data_source.dart';
+import '../../movies/data/datasource/person_remote_data_source.dart';
 import '../../movies/data/repository/movies_repository_impl.dart';
+import '../../movies/data/repository/person_repository_impl.dart';
 import '../../movies/domain/repository/movies_repository.dart';
+import '../../movies/domain/repository/person_repository.dart';
 import '../../movies/domain/usecases/get_all_popular_movies_usecase.dart';
 import '../../movies/domain/usecases/get_all_top_rated_movies_usecase.dart';
 import '../../movies/domain/usecases/get_movie_details_usecase.dart';
 import '../../movies/domain/usecases/get_movies_usecase.dart';
+import '../../movies/domain/usecases/get_person_details_usecase.dart';
 import '../../movies/presentation/controllers/movie_details_bloc/movie_details_bloc.dart';
 import '../../movies/presentation/controllers/movies_bloc/movies_bloc.dart';
+import '../../movies/presentation/controllers/person_details_bloc/person_details_bloc.dart';
 import '../../movies/presentation/controllers/popular_movies_bloc/popular_movies_bloc.dart';
 import '../../movies/presentation/controllers/top_rated_movies_bloc/top_rated_movies_bloc.dart';
 import '../../search/data/datasource/search_remote_data_source.dart';
@@ -89,6 +94,9 @@ class ServiceLocator {
     sl.registerLazySingleton<MoviesRemoteDataSource>(
       () => MoviesRemoteDataSourceImpl(sl()),
     );
+    sl.registerLazySingleton<PersonRemoteDataSource>(
+      () => PersonRemoteDataSourceImpl(sl()),
+    );
     sl.registerLazySingleton<TVShowsRemoteDataSource>(
       () => TVShowsRemoteDataSourceImpl(sl()),
     );
@@ -102,6 +110,9 @@ class ServiceLocator {
     // Repository
     sl.registerLazySingleton<MoviesRespository>(
       () => MoviesRepositoryImpl(sl()),
+    );
+    sl.registerLazySingleton<PersonRepository>(
+      () => PersonRepositoryImpl(sl()),
     );
     sl.registerLazySingleton<TVShowsRepository>(
       () => TVShowsRepositoryImpl(sl()),
@@ -119,6 +130,7 @@ class ServiceLocator {
     sl.registerLazySingleton(() =>
         GetAllPopularMoviesUseCase(sl()));
     sl.registerLazySingleton(() => GetAllTopRatedMoviesUseCase(sl()));
+    sl.registerLazySingleton(() => GetPersonDetailsUseCase(sl()));
     sl.registerLazySingleton(() =>
         GetTVShowsUseCase(sl()));
     sl.registerLazySingleton(() =>
@@ -137,6 +149,7 @@ class ServiceLocator {
     // Bloc
     sl.registerFactory(() => MoviesBloc(sl()));
     sl.registerFactory(() => MovieDetailsBloc(sl()));
+    sl.registerFactory(() => PersonDetailsBloc(sl()));
     sl.registerFactory(() =>
 
         PopularMoviesBloc(sl()));

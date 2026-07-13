@@ -149,7 +149,6 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // Main content
             Center(
               child: FadeTransition(
                 opacity: _fadeAnim,
@@ -164,11 +163,9 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Spinning orb
                       _buildSpinningOrb(),
                       const SizedBox(height: 36),
 
-                      // App title
                       ShaderMask(
                         shaderCallback: (bounds) => const LinearGradient(
                           colors: [Color(0xFFE8B84B), Color(0xFFC084FC)],

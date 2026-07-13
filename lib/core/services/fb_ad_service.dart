@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/services.dart';
 import 'remote_config_service.dart';
 
@@ -6,10 +7,31 @@ class FbAdService {
   static FbAdService? _instance;
   static FbAdService get instance => _instance ??= FbAdService._();
 
-  FbAdService._();
+  FbAdService._() {
+    _setupMethodCallHandler();
+  }
 
   bool _isInitialized = false;
   static const platform = MethodChannel('com.example.new_movie_app/facebook_ads');
+  
+  // Completer to track interstitial ad dismissal
+  Completer<void>? _interstitialDismissCompleter;
+
+  /// Set up method call handler to receive callbacks from native side
+  void _setupMethodCallHandler() {
+    platform.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'onInterstitialDismissed':
+          print('✅ FB Interstitial dismissed callback received');
+          if (_interstitialDismissCompleter != null && !_interstitialDismissCompleter!.isCompleted) {
+            _interstitialDismissCompleter!.complete();
+          }
+          break;
+        default:
+          print('⚠️ Unknown method call: ${call.method}');
+      }
+    });
+  }
 
   /// Initialize Facebook Audience Network SDK with test device
   Future<void> initialize() async {
@@ -142,11 +164,23 @@ class FbAdService {
   }
 
   /// Show loaded Interstitial Ad via Platform Channel
+  /// Returns a Future that completes when the ad is dismissed
   Future<bool> showInterstitialAd() async {
     try {
+      // Create a new completer for this ad show
+      _interstitialDismissCompleter = Completer<void>();
+      
       final result = await platform.invokeMethod('showFbInterstitial');
       if (result == true) {
-        print('✅ FB Interstitial ad shown');
+        print('✅ FB Interstitial ad shown, waiting for dismissal...');
+        // Wait for the ad to be dismissed with a longer timeout
+        await _interstitialDismissCompleter!.future.timeout(
+          const Duration(seconds: 60),
+          onTimeout: () {
+            print('! FB Interstitial dismiss timeout - continuing anyway');
+          },
+        );
+        print('✅ FB Interstitial ad dismissed');
         return true;
       } else {
         print('❌ FB Interstitial ad failed to show');
@@ -155,6 +189,8 @@ class FbAdService {
     } catch (e) {
       print('❌ Error showing FB interstitial ad: $e');
       return false;
+    } finally {
+      _interstitialDismissCompleter = null;
     }
   }
 

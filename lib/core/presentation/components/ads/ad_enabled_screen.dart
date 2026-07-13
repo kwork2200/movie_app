@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../utils/functions.dart';
 import 'hybrid_banner_ad_widget.dart';
-import 'interstitial_ad_manager.dart';
 
 /// Wrapper widget that adds banner ads to any screen
 class AdEnabledScreen extends StatefulWidget {
@@ -24,10 +24,9 @@ class _AdEnabledScreenState extends State<AdEnabledScreen> {
   void initState() {
     super.initState();
 
-    // Show interstitial ad when entering screen (with frequency control)
     if (widget.showInterstitialOnEnter) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        InterstitialAdManager.instance.showAdIfAvailable();
+        showManagedInterstitialAd(context, alwaysShow: false);
       });
     }
   }
@@ -36,9 +35,7 @@ class _AdEnabledScreenState extends State<AdEnabledScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Main content
         Expanded(child: widget.child),
-
         if (widget.showBanner)
           SafeArea(
             top: false,

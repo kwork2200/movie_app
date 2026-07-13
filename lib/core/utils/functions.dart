@@ -6,10 +6,51 @@ import '../presentation/components/overview_section.dart';
 import '../presentation/components/section_listview.dart';
 import '../presentation/components/section_listview_card.dart';
 import '../presentation/components/section_title.dart';
+import '../presentation/components/ads/interstitial_ad_manager.dart';
+import '../presentation/components/ads/qureka_interstitial.dart';
 import '../resources/app_colors.dart';
 import '../resources/app_routes.dart';
 import '../resources/app_strings.dart';
 import '../resources/app_values.dart';
+import '../services/ad_service.dart';
+import '../services/fb_ad_service.dart';
+import '../services/remote_config_service.dart';
+
+Future<bool> showManagedInterstitialAd(BuildContext context, {bool alwaysShow = false}) async {
+  try {
+    final bool googleEnabled = AdService.instance.shouldShowInterstitialAds;
+    final bool facebookEnabled = FbAdService.instance.shouldShowInterstitialAds;
+    final bool thirdPartyEnabled = RemoteConfigService.instance.showThirdPartyInterstitialAds && ENABLE_THIRD_PARTY_ADS;
+
+    if (!googleEnabled && !facebookEnabled && thirdPartyEnabled) {
+      debugPrint('🎯 Both Google & Facebook ads disabled - trying third-party ad');
+      
+      if (alwaysShow) {
+        if (context.mounted) {
+          await showQurekaInterstitialAd(context);
+          return true;
+        }
+      } else {
+        final shouldShow = await InterstitialAdManager.instance.showAdIfAvailable();
+        if (shouldShow && context.mounted) {
+          await showQurekaInterstitialAd(context);
+          return true;
+        }
+      }
+      return false;
+    }
+    if (alwaysShow) {
+      await InterstitialAdManager.instance.showAdAlways();
+      return true;
+    } else {
+      final shouldShow = await InterstitialAdManager.instance.showAdIfAvailable();
+      return shouldShow;
+    }
+  } catch (e) {
+    debugPrint('❌ Error in showManagedInterstitialAd: $e');
+    return false;
+  }
+}
 
 String getDate(String? date) {
   if (date == null || date.isEmpty) {
@@ -69,11 +110,9 @@ String getDate(String? date) {
 
 String getPosterUrl(String? path) {
   if (path != null && path.isNotEmpty) {
-    // OMDb returns full URLs, so check if it's already a full URL
     if (path.startsWith('http')) {
       return path;
     }
-    // Otherwise use the base URL (for TMDb compatibility)
     return ApiConstants.basePosterUrl + path;
   } else {
     return ApiConstants.moviePlaceHolder;
@@ -82,11 +121,9 @@ String getPosterUrl(String? path) {
 
 String getBackdropUrl(String? path) {
   if (path != null && path.isNotEmpty) {
-    // OMDb returns full URLs, so check if it's already a full URL
     if (path.startsWith('http')) {
       return path;
     }
-    // Otherwise use the base URL (for TMDb compatibility)
     return ApiConstants.baseBackdropUrl + path;
   } else {
     return ApiConstants.moviePlaceHolder;
@@ -95,11 +132,9 @@ String getBackdropUrl(String? path) {
 
 String getStillUrl(String? path) {
   if (path != null && path.isNotEmpty) {
-    // OMDb returns full URLs, so check if it's already a full URL
     if (path.startsWith('http')) {
       return path;
     }
-    // Otherwise use the base URL (for TMDb compatibility)
     return ApiConstants.baseStillUrl + path;
   } else {
     return ApiConstants.stillPlaceHolder;
@@ -202,18 +237,76 @@ String getTrailerUrl(Map<String, dynamic> json) {
     return '';
   }
 }
+Future<void> navigateToDetailsView(BuildContext context, Media media) async {
+  debugPrint('📍 Starting navigation for: ${media.title}');
 
-void navigateToDetailsView(BuildContext context, Media media) {
-  if (media.isMovie) {
-    context.pushNamed(
-      AppRoutes.movieDetailsRoute,
-      pathParameters: {'movieId': media.tmdbID.toString()},
-    );
-  } else {
-    context.pushNamed(
-      AppRoutes.tvShowDetailsRoute,
-      pathParameters: {'tvShowId': media.tmdbID.toString()},
-    );
+  final isMovie = media.isMovie;
+  final mediaId = media.tmdbID.toString();
+
+  debugPrint('📍 Media type: ${isMovie ? "Movie" : "TV Show"}, ID: $mediaId');
+  final GoRouter router = GoRouter.of(context);
+
+  bool adShown = false;
+  try {
+    debugPrint('📺 Showing interstitial ad...');
+
+    final bool googleEnabled = AdService.instance.shouldShowInterstitialAds;
+    final bool facebookEnabled = FbAdService.instance.shouldShowInterstitialAds;
+    final bool thirdPartyEnabled = RemoteConfigService.instance.showThirdPartyInterstitialAds && ENABLE_THIRD_PARTY_ADS;
+
+    // Check if both Google and Facebook ads are disabled
+    if (!googleEnabled && !facebookEnabled && thirdPartyEnabled) {
+      debugPrint('🎯 Both Google & Facebook ads disabled - showing third-party interstitial ad with frequency control');
+
+      // Increment counter for frequency control
+      InterstitialAdManager.instance.incrementCounter();
+      
+      if (!InterstitialAdManager.instance.shouldShowAdByFrequency()) {
+        debugPrint('⏭️ Skipping third-party ad (counter: ${InterstitialAdManager.instance.screenCounter}, frequency: ${AdService.instance.interstitialAdFrequency})');
+      } else {
+        // Reset counter and show ad
+        InterstitialAdManager.instance.resetCounter();
+        if (context.mounted) {
+          debugPrint('✅ Showing third-party interstitial ad now');
+          await showQurekaInterstitialAd(context);
+          adShown = true;
+          debugPrint('✅ Third-party ad dismissed, proceeding with navigation');
+        }
+      }
+    } else if (googleEnabled || facebookEnabled) {
+      // Show Google/Facebook ads
+      debugPrint('📺 Attempting to show Google/Facebook interstitial ad');
+      await InterstitialAdManager.instance.showAdIfAvailable();
+      adShown = true;
+      debugPrint('✅ Ad flow completed');
+    } else {
+      debugPrint('⚠️ All ads disabled - no ad to show');
+    }
+  } catch (e) {
+    debugPrint('⚠️ Ad error: $e');
+  }
+
+  if (adShown) {
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+  debugPrint('🚀 Preparing navigation...');
+  try {
+    debugPrint('🎯 Executing navigation');
+    if (isMovie) {
+      router.goNamed(
+        AppRoutes.movieDetailsRoute,
+        pathParameters: {'movieId': mediaId},
+      );
+      debugPrint('✅ Movie details navigation initiated');
+    } else {
+      router.goNamed(
+        AppRoutes.tvShowDetailsRoute,
+        pathParameters: {'tvShowId': mediaId},
+      );
+      debugPrint('✅ TV show details navigation initiated');
+    }
+  } catch (e) {
+    debugPrint('❌ Navigation error: $e');
   }
 }
 
