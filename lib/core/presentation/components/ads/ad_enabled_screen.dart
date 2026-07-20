@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/functions.dart';
 import 'hybrid_banner_ad_widget.dart';
 
@@ -20,9 +21,25 @@ class AdEnabledScreen extends StatefulWidget {
 }
 
 class _AdEnabledScreenState extends State<AdEnabledScreen> {
+  static const String _skipInterstitialKey = 'skip_interstitial_on_next_screen';
+
   @override
   void initState() {
     super.initState();
+
+    _checkAndShowInterstitial();
+  }
+
+  Future<void> _checkAndShowInterstitial() async {
+    final prefs = await SharedPreferences.getInstance();
+    final skipInterstitial = prefs.getBool(_skipInterstitialKey) ?? false;
+
+    if (skipInterstitial) {
+      // Reset the flag after consuming it
+      await prefs.setBool(_skipInterstitialKey, false);
+      print('⏭️ Skipping interstitial ad (app resumed from background)');
+      return;
+    }
 
     if (widget.showInterstitialOnEnter) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

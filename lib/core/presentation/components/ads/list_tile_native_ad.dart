@@ -34,7 +34,7 @@ class _ListTileNativeAdState extends State<ListTileNativeAd> {
   void _loadNativeAd() {
     _nativeAd = NativeAd(
       adUnitId: widget.adUnitId ?? AdService.instance.nativeAdUnitId,
-      factoryId: 'listTile', // This must match the factory ID registered in MainActivity
+      factoryId: 'listTile',
       listener: NativeAdListener(
         onAdLoaded: (_) {
           if (mounted) {

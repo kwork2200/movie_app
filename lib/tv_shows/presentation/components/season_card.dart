@@ -13,6 +13,8 @@ class SeasonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("snoafr ff==>> ${season.posterUrl}");
+
     final textTheme = Theme.of(context).textTheme;
     return InkWell(
       onTap: () {

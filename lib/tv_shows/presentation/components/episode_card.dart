@@ -4,6 +4,7 @@ import '../../../core/presentation/components/image_with_shimmer.dart';
 import '../../../core/resources/app_strings.dart';
 import '../../../core/resources/app_values.dart';
 import '../../domain/entities/episode.dart';
+import '../views/episode_detail_view.dart';
 
 class EpisodeCard extends StatelessWidget {
   const EpisodeCard({
@@ -26,23 +27,34 @@ class EpisodeCard extends StatelessWidget {
         ),
       );
     }
-
-
-
     final textTheme = Theme.of(context).textTheme;
+    final imageUrl = episode.stillPath.isEmpty 
+        ? 'assets/images/episode_default.png' 
+        : episode.stillPath;
+    
     return Container(
       height: AppSize.s110,
       padding: const EdgeInsets.symmetric(horizontal: AppPadding.p16),
       child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppPadding.p8),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSize.s8),
-              child: ImageWithShimmer(
-                imageUrl: episode.stillPath,
-                width: AppSize.s150,
-                height: double.infinity,
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EpisodeDetailView(episode: episode),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: AppPadding.p8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppSize.s8),
+                child: ImageWithShimmer(
+                  imageUrl: imageUrl,
+                  width: AppSize.s150,
+                  height: double.infinity,
+                ),
               ),
             ),
           ),

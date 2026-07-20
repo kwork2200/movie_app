@@ -15,12 +15,9 @@ class AppLifecycleReactor with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     log('App Lifecycle State: $state');
     
-    // DO NOT show app open ad automatically on app resume
-    // App open ads will be shown only on info screen
-    
-    // Load ad when app goes to background to be ready for info screen
+    // Load ad when app goes to background to be ready for next resume
     if (state == AppLifecycleState.paused) {
-      log('App paused - preloading App Open Ad for info screen');
+      log('App paused - preloading App Open Ad');
       if (!appOpenAdManager.isAdAvailable) {
         appOpenAdManager.loadAd();
       }

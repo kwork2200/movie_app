@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:new_movie_app/tv_shows/presentation/controllers/tv_shows_bloc/tv_shows_bloc.dart';
 import 'package:new_movie_app/watchlist/data/models/watchlist_item_model.dart';
 import 'package:new_movie_app/watchlist/presentation/controllers/watchlist_bloc/watchlist_bloc.dart';
@@ -100,27 +101,53 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       final pauseDuration = DateTime.now().difference(_lastPausedTime!);
       print('🟢 App resumed after ${pauseDuration.inSeconds} seconds');
       if (pauseDuration >= _backgroundThreshold) {
-        print('✅ App was in background long enough - scheduling navigation to info screen');
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _navigateToInfoScreen();
-        });
+        print('✅ App was in background long enough - showing ad and navigating to movies view');
+        _showAdAndNavigate();
       } else {
-        print('⏭️ Quick resume - skipping info screen');
+        print('⏭️ Quick resume - skipping navigation');
       }
       _wasInBackground = false;
       _lastPausedTime = null;
     }
   }
 
-  void _navigateToInfoScreen() {
+  void _showAdAndNavigate() async {
+    if (!mounted) {
+      print('⚠️ Cannot show ad - widget not mounted');
+      return;
+    }
+
+    // Set flag to skip interstitial ads on next screen
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('skip_interstitial_on_next_screen', true);
+    print('✅ Set skip interstitial flag for next screen');
+    
+    AppOpenAdManager.instance.showAdIfAvailable(
+      onAdDismissed: () {
+        print('✅ Ad dismissed, navigating to movies view');
+        if (mounted) {
+          _navigateToMoviesView();
+        }
+      },
+    );
+    
+    // Navigate after timeout if ad doesn't show
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        _navigateToMoviesView();
+      }
+    });
+  }
+
+  void _navigateToMoviesView() {
     if (!mounted) {
       print('⚠️ Cannot navigate - widget not mounted');
       return;
     }
     try {
       final router = AppRouter.router;
-      router.go('/info');
-      print('📍 Navigated to info screen');
+      router.go('/movies');
+      print('📍 Navigated to movies view');
     } catch (e) {
       print('❌ Navigation error: $e');
     }

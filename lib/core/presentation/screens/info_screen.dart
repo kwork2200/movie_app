@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../../../ads/app_open_ad_manager.dart';
@@ -36,14 +37,9 @@ class _InfoScreenState extends State<InfoScreen> {
         _tryShowAppOpenAd(),
         Future.delayed(const Duration(seconds: 5)),
       ]);
-      await Future.delayed(const Duration(milliseconds: 800));
-      await Future.any([
-        _tryShowInterstitialAd(),
-        Future.delayed(const Duration(seconds: 3)),
-      ]);
-      
-      print('🎬 InfoScreen: All ads complete, displaying screen');
-      
+
+      print('🎬 InfoScreen: Ad complete, displaying screen');
+
     } catch (e) {
       print('❌ InfoScreen: Critical error in ad sequence: $e');
     } finally {
@@ -128,17 +124,20 @@ class _InfoScreenState extends State<InfoScreen> {
           }
         }
       }
-      manager.loadAd();
+      // manager.loadAd();
       
     } catch (e) {
       print('❌ InfoScreen: Error in _tryShowInterstitialAd: $e');
     }
   }
 
-  Future<void> _launchURL(String url) async {
-    final Uri uri = Uri.parse(url);
+  Future<void> _rateUs() async {
+    final Uri uri = Uri.parse(
+      'https://play.google.com/store/apps/details?id=com.example.new_movie_app',
+    );
+
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
+      throw Exception('Could not launch Play Store');
     }
   }
 
@@ -170,6 +169,7 @@ class _InfoScreenState extends State<InfoScreen> {
       );
     }
     return AdEnabledScreen(
+      showInterstitialOnEnter: false,
       child: Scaffold(
         backgroundColor: const Color(0xFF090C14),
         appBar: AppBar(
@@ -268,8 +268,8 @@ class _InfoScreenState extends State<InfoScreen> {
                 subtitle: 'Help us improve with your feedback',
                 color: const Color(0xFFC084FC),
                 onTap: () {
-                  _launchURL('https://play.google.com/store/apps');
-                },
+                  _rateUs();
+                  },
               ),
               const SizedBox(height: 16),
               _buildActionTile(
@@ -277,8 +277,11 @@ class _InfoScreenState extends State<InfoScreen> {
                 title: 'Share',
                 subtitle: 'Share this app with your friends',
                 color: const Color(0xFF6366F1),
-                onTap: () {
-                  _launchURL('https://play.google.com/store/apps');
+                  onTap: () async {
+                    await Share.share(
+                      'Check out this app:\nhttps://play.google.com/store/apps/details?id=com.example.new_movie_app',
+                      subject: 'Check out this app',
+                    );
                 },
               ),
             ],

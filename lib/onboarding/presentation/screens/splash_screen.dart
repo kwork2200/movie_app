@@ -72,18 +72,8 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
     
-    // Check if onboarding is complete
-    final storage = sl<OnboardingStorageService>();
-    final isOnboardingComplete = storage.isOnboardingComplete();
-    final hasLanguage = storage.getSelectedLanguage() != null;
-    
-    if (isOnboardingComplete && hasLanguage) {
-      // User has completed onboarding, go to home
-      context.go('/movies');
-    } else {
-      // First time user, go to info screen
-      context.go('/info');
-    }
+    // Always go to info screen first
+    context.go('/info');
   }
 
   @override
